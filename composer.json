@@ -4,7 +4,7 @@
     "description": "EBizCharge payment gateway integration for Magento 2 (replacement for ebizcharge/ebizcharge).",
     "type": "magento2-module",
     "license": [
-        "Proprietary"
+        "MIT"
     ],
     "require": {
         "php": "~8.3.0||~8.4.0",
