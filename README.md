@@ -46,7 +46,39 @@ Current module version: `1.0.0`
 
 ## Installation
 
-Place the module in `app/code/Gtstudio/Ebizcharge`, then run from the Magento root:
+### Composer installation
+
+Composer is the recommended installation method. Ensure
+`gtstudio/module-ebizcharge` is available through an authorized Composer repository, such as
+Private Packagist, Satis, an authenticated VCS repository, or the project's package repository.
+Do not commit repository credentials or access tokens to source control.
+
+From the Magento root:
+
+```bash
+composer require gtstudio/module-ebizcharge:^1.0
+bin/magento setup:upgrade
+```
+
+Composer installs the package according to its `magento2-module` package type and PSR-4
+autoloading metadata. Commit the resulting `composer.json` and `composer.lock` changes according
+to the project's dependency-management policy.
+
+If the package is hosted in a private VCS repository that is not already registered in the
+project, configure that repository before running `composer require`:
+
+```bash
+composer config repositories.gtstudio-ebizcharge vcs <authorized-repository-url>
+composer require gtstudio/module-ebizcharge:^1.0
+```
+
+Use Composer authentication mechanisms or deployment environment secrets for private
+credentials; do not place credentials directly in `composer.json`.
+
+### Manual installation
+
+When a Composer package repository is unavailable, place the module source in
+`app/code/Gtstudio/Ebizcharge`, then run:
 
 ```bash
 bin/magento module:enable Gtstudio_Ebizcharge
@@ -54,8 +86,9 @@ bin/magento setup:upgrade
 bin/magento cache:flush
 ```
 
-For production mode, regenerate dependency injection and static assets according to the
-deployment process used by the Magento installation.
+Composer installation should remain the default for repeatable deployments and dependency
+tracking. For production mode, regenerate dependency injection and static assets according to
+the deployment process used by the Magento installation.
 
 Configure the integration under:
 
