@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="gtstudio_ebizcharge_subscription_charge_failed"
+              label="Subscription Charge Failed"
+              file="subscription_charge_failed.html"
+              type="html"
+              module="Gtstudio_Ebizcharge"
+              area="frontend"/>
+    <template id="gtstudio_ebizcharge_subscription_upcoming_charge"
+              label="Subscription Upcoming Charge"
+              file="subscription_upcoming_charge.html"
+              type="html"
+              module="Gtstudio_Ebizcharge"
+              area="frontend"/>
+    <template id="gtstudio_ebizcharge_subscription_card_expiring"
+              label="Subscription Card Expiring"
+              file="subscription_card_expiring.html"
+              type="html"
+              module="Gtstudio_Ebizcharge"
+              area="frontend"/>
+</config>

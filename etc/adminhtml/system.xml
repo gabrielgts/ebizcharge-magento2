@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="payment">
+            <group id="gtstudio_ebizcharge"
+                   translate="label comment"
+                   type="text"
+                   sortOrder="10"
+                   showInDefault="1"
+                   showInWebsite="1"
+                   showInStore="1">
+                <label>EBizCharge (Gtstudio)</label>
+                <comment><![CDATA[Modern EBizCharge integration. PCI scope: server-side card capture. All credentials are stored encrypted.]]></comment>
+                <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/gtstudio_ebizcharge/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <config_path>payment/gtstudio_ebizcharge/title</config_path>
+                </field>
+
+                <group id="credentials" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Credentials</label>
+                    <field id="endpoint_mode" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Endpoint Mode</label>
+                        <source_model>Gtstudio\Ebizcharge\Model\Adminhtml\Source\EndpointMode</source_model>
+                        <config_path>payment/gtstudio_ebizcharge/endpoint_mode</config_path>
+                    </field>
+                    <field id="endpoint_url_override" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Endpoint URL Override</label>
+                        <comment>Optional. Leave blank to use the default for the selected mode.</comment>
+                        <config_path>payment/gtstudio_ebizcharge/endpoint_url_override</config_path>
+                    </field>
+                    <field id="user_id" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>User ID</label>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <config_path>payment/gtstudio_ebizcharge/user_id</config_path>
+                    </field>
+                    <field id="security_id" translate="label" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Security ID (Source Key)</label>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <config_path>payment/gtstudio_ebizcharge/security_id</config_path>
+                    </field>
+                    <field id="password" translate="label" type="obscure" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Password / PIN</label>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <config_path>payment/gtstudio_ebizcharge/password</config_path>
+                    </field>
+                    <field id="test_connection" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Verify Credentials</label>
+                        <frontend_model>Gtstudio\Ebizcharge\Block\System\Config\TestConnectionButton</frontend_model>
+                    </field>
+                </group>
+
+                <group id="behavior" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Behavior</label>
+                    <field id="payment_action" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Payment Action</label>
+                        <source_model>Gtstudio\Ebizcharge\Model\Adminhtml\Source\PaymentAction</source_model>
+                        <config_path>payment/gtstudio_ebizcharge/payment_action</config_path>
+                    </field>
+                    <field id="cctypes" translate="label" type="multiselect" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Accepted Card Types</label>
+                        <source_model>Magento\Payment\Model\Source\Cctype</source_model>
+                        <config_path>payment/gtstudio_ebizcharge/cctypes</config_path>
+                    </field>
+                    <field id="description" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Transaction Description</label>
+                        <comment>[orderid] is replaced with the Magento order increment ID.</comment>
+                        <config_path>payment/gtstudio_ebizcharge/description</config_path>
+                    </field>
+                    <field id="sort_order" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Sort Order</label>
+                        <config_path>payment/gtstudio_ebizcharge/sort_order</config_path>
+                    </field>
+                </group>
+
+                <group id="ach" translate="label" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>ACH (Bank Account)</label>
+                    <comment>Shares Credentials and Logging settings with the credit-card method above.</comment>
+                    <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enable ACH Payments</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/gtstudio_ebizcharge_ach/active</config_path>
+                    </field>
+                    <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Title</label>
+                        <config_path>payment/gtstudio_ebizcharge_ach/title</config_path>
+                    </field>
+                    <field id="sort_order" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Sort Order</label>
+                        <config_path>payment/gtstudio_ebizcharge_ach/sort_order</config_path>
+                    </field>
+                </group>
+
+                <group id="subscription" translate="label" sortOrder="48" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Subscriptions</label>
+                    <comment>Recurring billing thresholds and customer notifications.</comment>
+                    <field id="subscription_failure_threshold_failing" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Failures before "failing" status</label>
+                        <comment>Subscription is marked "failing" after this many consecutive failed charges (still attempts retries).</comment>
+                        <validate>validate-greater-than-zero</validate>
+                        <config_path>payment/gtstudio_ebizcharge/subscription_failure_threshold_failing</config_path>
+                    </field>
+                    <field id="subscription_failure_threshold_cancel" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Failures before auto-cancel</label>
+                        <comment>Subscription is auto-cancelled after this many consecutive failures (stops retrying).</comment>
+                        <validate>validate-greater-than-zero</validate>
+                        <config_path>payment/gtstudio_ebizcharge/subscription_failure_threshold_cancel</config_path>
+                    </field>
+                    <field id="subscription_upcoming_charge_email_days" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Upcoming charge email — days ahead</label>
+                        <comment>Send "your subscription will renew" email this many days before the next charge.</comment>
+                        <validate>validate-greater-than-zero</validate>
+                        <config_path>payment/gtstudio_ebizcharge/subscription_upcoming_charge_email_days</config_path>
+                    </field>
+                    <field id="subscription_card_expiring_email_days" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Card expiring email — day thresholds</label>
+                        <comment>Comma-separated days. Default 30,7,1 sends three reminders.</comment>
+                        <config_path>payment/gtstudio_ebizcharge/subscription_card_expiring_email_days</config_path>
+                    </field>
+                </group>
+
+                <group id="logging" translate="label" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Logging &amp; Debug</label>
+                    <field id="debug" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>Debug Mode</label>
+                        <comment>When enabled, the SOAP trace is captured. PAN/CVV are still redacted by the Monolog redaction processor.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/gtstudio_ebizcharge/debug</config_path>
+                    </field>
+                    <field id="soap_timeout" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>SOAP Read Timeout (s)</label>
+                        <validate>validate-greater-than-zero</validate>
+                        <config_path>payment/gtstudio_ebizcharge/soap_timeout</config_path>
+                    </field>
+                    <field id="soap_connect_timeout" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                        <label>SOAP Connect Timeout (s)</label>
+                        <validate>validate-greater-than-zero</validate>
+                        <config_path>payment/gtstudio_ebizcharge/soap_connect_timeout</config_path>
+                    </field>
+                </group>
+            </group>
+        </section>
+    </system>
+</config>

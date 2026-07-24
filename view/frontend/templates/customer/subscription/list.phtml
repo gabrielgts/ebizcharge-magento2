@@ -1,0 +1,112 @@
+<?php
+/**
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Gtstudio\Ebizcharge\ViewModel\Customer\SubscriptionList $viewModel
+ */
+$viewModel = $block->getData('view_model');
+$subscriptions = $viewModel->getSubscriptions();
+$tokens = $viewModel->getCustomerPaymentTokens();
+$formKey = $block->getData('form_key') ?: '';
+?>
+<div class="block block-gtstudio-subscriptions">
+    <div class="block-title">
+        <strong><?= $block->escapeHtml(__('My Subscriptions')) ?></strong>
+    </div>
+    <div class="block-content">
+        <?php if ($subscriptions === []): ?>
+            <p><?= $block->escapeHtml(__('You have no active subscriptions.')) ?></p>
+        <?php else: ?>
+            <table class="data table table-gtstudio-subscriptions" id="gtstudio-subscriptions-table">
+                <caption class="table-caption"><?= $block->escapeHtml(__('My Subscriptions')) ?></caption>
+                <thead>
+                    <tr>
+                        <th scope="col" class="col"><?= $block->escapeHtml(__('Subscription')) ?></th>
+                        <th scope="col" class="col"><?= $block->escapeHtml(__('Status')) ?></th>
+                        <th scope="col" class="col"><?= $block->escapeHtml(__('Frequency')) ?></th>
+                        <th scope="col" class="col"><?= $block->escapeHtml(__('Amount')) ?></th>
+                        <th scope="col" class="col"><?= $block->escapeHtml(__('Next Charge')) ?></th>
+                        <th scope="col" class="col"><?= $block->escapeHtml(__('Actions')) ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($subscriptions as $subscription): ?>
+                    <?php
+                        $id = (int) $subscription->getEntityId();
+                        $status = $subscription->getStatus();
+                        $color = $viewModel->getStatusColor($status);
+                    ?>
+                    <tr>
+                        <td data-th="<?= $block->escapeHtmlAttr(__('Subscription')) ?>" class="col">
+                            <a href="<?= $block->escapeUrl($block->getUrl('gtstudio_ebizcharge/subscription/view', ['id' => $id])) ?>">
+                                <strong><?= $block->escapeHtml((string) $subscription->getLabel() ?: '#' . $id) ?></strong>
+                            </a>
+                            <?php if ($viewModel->isFailing($subscription)): ?>
+                                <div class="message warning gtstudio-failing-banner" role="alert" style="margin-top:8px;">
+                                    <?= $block->escapeHtml(__('Last payment failed. Update your payment method below to keep this subscription active.')) ?>
+                                </div>
+                            <?php endif; ?>
+                        </td>
+                        <td data-th="<?= $block->escapeHtmlAttr(__('Status')) ?>" class="col">
+                            <span style="display:inline-block;padding:2px 10px;border-radius:10px;background:<?= $block->escapeHtmlAttr($color) ?>;color:#fff;font-weight:600;font-size:11px;">
+                                <?= $block->escapeHtml($viewModel->getStatusLabel($status)) ?>
+                            </span>
+                        </td>
+                        <td data-th="<?= $block->escapeHtmlAttr(__('Frequency')) ?>" class="col">
+                            <?= $block->escapeHtml(ucfirst($subscription->getFrequency())) ?>
+                        </td>
+                        <td data-th="<?= $block->escapeHtmlAttr(__('Amount')) ?>" class="col">
+                            <?= $block->escapeHtml(sprintf('%s %s', number_format($subscription->getAmount(), 2), $subscription->getCurrencyCode())) ?>
+                        </td>
+                        <td data-th="<?= $block->escapeHtmlAttr(__('Next Charge')) ?>" class="col">
+                            <?= $block->escapeHtml($subscription->getNextBillDate() ?? '—') ?>
+                        </td>
+                        <td data-th="<?= $block->escapeHtmlAttr(__('Actions')) ?>" class="col actions">
+                            <?php if ($viewModel->isCancellable($subscription)): ?>
+                                <?php if ($viewModel->isPaused($subscription)): ?>
+                                    <form action="<?= $block->escapeUrl($block->getUrl('gtstudio_ebizcharge/subscription/resume', ['id' => $id])) ?>" method="post" data-mage-init='{"validation":{}}' style="display:inline;">
+                                        <?= $block->getBlockHtml('formkey') ?>
+                                        <button type="submit" class="action secondary">
+                                            <span><?= $block->escapeHtml(__('Resume')) ?></span>
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <form action="<?= $block->escapeUrl($block->getUrl('gtstudio_ebizcharge/subscription/pause', ['id' => $id])) ?>" method="post" data-mage-init='{"validation":{}}' style="display:inline;">
+                                        <?= $block->getBlockHtml('formkey') ?>
+                                        <button type="submit" class="action secondary">
+                                            <span><?= $block->escapeHtml(__('Pause')) ?></span>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
+
+                                <form action="<?= $block->escapeUrl($block->getUrl('gtstudio_ebizcharge/subscription/cancel', ['id' => $id])) ?>" method="post" onsubmit="return confirm('<?= $block->escapeJs(__('Cancel this subscription? This cannot be undone.')) ?>');" style="display:inline;">
+                                    <?= $block->getBlockHtml('formkey') ?>
+                                    <button type="submit" class="action secondary">
+                                        <span><?= $block->escapeHtml(__('Cancel')) ?></span>
+                                    </button>
+                                </form>
+
+                                <?php if ($tokens !== []): ?>
+                                    <form action="<?= $block->escapeUrl($block->getUrl('gtstudio_ebizcharge/subscription/updatePaymentMethod', ['id' => $id])) ?>" method="post" style="display:inline-block; margin-top:6px;">
+                                        <?= $block->getBlockHtml('formkey') ?>
+                                        <select name="public_hash" required>
+                                            <option value=""><?= $block->escapeHtml(__('Change payment method...')) ?></option>
+                                            <?php foreach ($tokens as $token): ?>
+                                                <option value="<?= $block->escapeHtmlAttr((string) $token->getPublicHash()) ?>">
+                                                    <?= $block->escapeHtml($viewModel->getTokenLabel($token)) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <button type="submit" class="action secondary">
+                                            <span><?= $block->escapeHtml(__('Update')) ?></span>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </div>
+</div>

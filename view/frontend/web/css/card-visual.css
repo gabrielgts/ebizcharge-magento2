@@ -1,0 +1,52 @@
+.gtstudio-card-visual-wrapper {
+    margin: 0 auto 24px;
+    text-align: center;
+}
+
+.gtstudio-card-visual-wrapper .jp-card-container {
+    margin: 0 auto;
+}
+
+.gtstudio-ebizcharge-card-form .fieldset.ccard > .field {
+    max-width: 768px;
+}
+
+.gtstudio-ebizcharge-card-form .fieldset.ccard > .field > .label,
+.gtstudio-ebizcharge-card-form .fieldset.ccard > .field > .control {
+    display: block;
+    margin-left: 0;
+    width: 100%;
+}
+
+.gtstudio-ebizcharge-card-form .fieldset.ccard > .field > .control,
+.gtstudio-ebizcharge-card-form .fieldset.ccard .field.type .control,
+.gtstudio-ebizcharge-card-form .fieldset.ccard .field.type .select,
+.gtstudio-ebizcharge-card-form .fieldset.ccard .field.name .control,
+.gtstudio-ebizcharge-card-form .fieldset.ccard .field.name .input-text,
+.gtstudio-ebizcharge-card-form .fieldset.ccard .field.number .control,
+.gtstudio-ebizcharge-card-form .fieldset.ccard .field.number .input-text {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.gtstudio-ebizcharge-card-form .fieldset.ccard .fields.group {
+    display: flex;
+    gap: 6px;
+}
+
+.gtstudio-ebizcharge-card-form .fieldset.ccard .fields.group > .field {
+    margin: 0;
+    padding: 0;
+}
+
+.gtstudio-ebizcharge-card-form .fieldset.ccard .field.month .select {
+    width: 140px;
+}
+
+.gtstudio-ebizcharge-card-form .fieldset.ccard .field.year .select {
+    width: 80px;
+}
+
+.gtstudio-ebizcharge-card-form .fieldset.ccard .field.cvv .input-text {
+    width: 54px;
+}

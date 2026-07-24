@@ -1,0 +1,29 @@
+{
+    "name": "gtstudio/module-ebizcharge",
+    "version": "1.0.0",
+    "description": "EBizCharge payment gateway integration for Magento 2 (replacement for ebizcharge/ebizcharge).",
+    "type": "magento2-module",
+    "license": [
+        "Proprietary"
+    ],
+    "require": {
+        "php": "~8.3.0||~8.4.0",
+        "magento/framework": "*",
+        "magento/module-payment": "*",
+        "magento/module-sales": "*",
+        "magento/module-checkout": "*",
+        "magento/module-vault": "*",
+        "magento/module-store": "*",
+        "magento/module-config": "*",
+        "magento/module-quote": "*",
+        "magento/module-customer": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Gtstudio\\Ebizcharge\\": ""
+        }
+    }
+}

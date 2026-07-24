@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <!-- Hourly: enqueue pending charge rows for subscriptions due today -->
+        <job name="gtstudio_ebizcharge_subscription_schedule"
+             instance="Gtstudio\Ebizcharge\Cron\ScheduleSubscriptions"
+             method="execute">
+            <schedule>0 * * * *</schedule>
+        </job>
+
+        <!-- Every 15 minutes: process pending charges through the engine -->
+        <job name="gtstudio_ebizcharge_subscription_charge"
+             instance="Gtstudio\Ebizcharge\Cron\ChargeSubscriptions"
+             method="execute">
+            <schedule>*/15 * * * *</schedule>
+        </job>
+
+        <!-- Daily 8am: email customers whose subscription will charge in N days -->
+        <job name="gtstudio_ebizcharge_subscription_notify_upcoming"
+             instance="Gtstudio\Ebizcharge\Cron\NotifyUpcomingCharges"
+             method="execute">
+            <schedule>0 8 * * *</schedule>
+        </job>
+
+        <!-- Daily 9am: email customers whose saved card is approaching expiration -->
+        <job name="gtstudio_ebizcharge_subscription_notify_expiring"
+             instance="Gtstudio\Ebizcharge\Cron\NotifyExpiringCards"
+             method="execute">
+            <schedule>0 9 * * *</schedule>
+        </job>
+
+        <!-- Daily 3am: prune debug-trace rows older than 7 days -->
+        <job name="gtstudio_ebizcharge_debug_trace_prune"
+             instance="Gtstudio\Ebizcharge\Cron\PruneDebugTraces"
+             method="execute">
+            <schedule>0 3 * * *</schedule>
+        </job>
+    </group>
+</config>

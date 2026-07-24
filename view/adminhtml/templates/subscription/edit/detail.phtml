@@ -1,0 +1,167 @@
+<?php
+/** @var \Gtstudio\Ebizcharge\Block\Adminhtml\Subscription\Edit\Detail $block */
+$subscription = $block->getSubscription();
+if ($subscription === null) {
+    return;
+}
+$status = $subscription->getStatus();
+$statusColors = [
+    'active' => '#79a22e',
+    'paused' => '#1979c3',
+    'failing' => '#e02b27',
+    'cancelled' => '#7d7d7d',
+    'expired' => '#7d7d7d',
+    'completed' => '#b8a300',
+];
+$color = $statusColors[$status] ?? '#666';
+?>
+
+<div class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $block->escapeHtml(__('Subscription #%1', $subscription->getEntityId())) ?></span>
+        <span style="margin-left:12px;display:inline-block;padding:2px 12px;border-radius:10px;background:<?= $block->escapeHtmlAttr($color) ?>;color:#fff;font-weight:600;font-size:11px;">
+            <?= $block->escapeHtml(ucfirst($status)) ?>
+        </span>
+    </div>
+
+    <div class="admin__page-section-content">
+        <div class="admin__fieldset">
+            <table class="data-table">
+                <tr><th><?= $block->escapeHtml(__('Customer')) ?></th>
+                    <td>
+                        <a href="<?= $block->escapeUrl($block->getCustomerEditUrl()) ?>">
+                            <?= $block->escapeHtml($block->getCustomerEmail()) ?>
+                        </a>
+                    </td></tr>
+                <tr><th><?= $block->escapeHtml(__('Frequency')) ?></th>
+                    <td><?= $block->escapeHtml(ucfirst($subscription->getFrequency())) ?></td></tr>
+                <tr><th><?= $block->escapeHtml(__('Amount per cycle')) ?></th>
+                    <td><?= $block->escapeHtml(sprintf('%s %s', number_format($subscription->getAmount(), 2), $subscription->getCurrencyCode())) ?></td></tr>
+                <tr><th><?= $block->escapeHtml(__('Next bill date')) ?></th>
+                    <td><?= $block->escapeHtml((string) $subscription->getNextBillDate()) ?></td></tr>
+                <tr><th><?= $block->escapeHtml(__('Last charged at')) ?></th>
+                    <td><?= $block->escapeHtml((string) ($subscription->getLastChargedAt() ?? '—')) ?></td></tr>
+                <tr><th><?= $block->escapeHtml(__('Cycles completed')) ?></th>
+                    <td><?= (int) $subscription->getCompletedCycles() ?>
+                        <?php if ($subscription->getMaxCycles() !== null): ?>
+                            / <?= (int) $subscription->getMaxCycles() ?>
+                        <?php else: ?>
+                            / ∞
+                        <?php endif; ?>
+                    </td></tr>
+                <tr><th><?= $block->escapeHtml(__('Failure count')) ?></th>
+                    <td><?= (int) $subscription->getFailureCount() ?></td></tr>
+                <tr><th><?= $block->escapeHtml(__('Created')) ?></th>
+                    <td><?= $block->escapeHtml((string) $subscription->getCreatedAt()) ?></td></tr>
+            </table>
+        </div>
+
+        <div class="actions-toolbar" style="margin-top:16px;">
+            <?php if (!in_array($status, ['cancelled', 'completed', 'expired'], true)): ?>
+                <?php if (in_array($status, ['paused', 'failing'], true)): ?>
+                    <a href="<?= $block->escapeUrl($block->getActionUrl('resume')) ?>" class="action-default scalable">
+                        <span><?= $block->escapeHtml(__('Resume')) ?></span>
+                    </a>
+                <?php else: ?>
+                    <a href="<?= $block->escapeUrl($block->getActionUrl('pause')) ?>" class="action-default scalable">
+                        <span><?= $block->escapeHtml(__('Pause')) ?></span>
+                    </a>
+                <?php endif; ?>
+                <?php if ($status === 'active'): ?>
+                    <a href="<?= $block->escapeUrl($block->getActionUrl('chargeNow')) ?>" class="action-default scalable">
+                        <span><?= $block->escapeHtml(__('Charge Now')) ?></span>
+                    </a>
+                <?php endif; ?>
+                <a href="<?= $block->escapeUrl($block->getActionUrl('cancel')) ?>" class="action-default scalable" onclick="return confirm('<?= $block->escapeJs(__('Cancel this subscription? This is permanent.')) ?>');">
+                    <span><?= $block->escapeHtml(__('Cancel')) ?></span>
+                </a>
+            <?php endif; ?>
+            <a href="<?= $block->escapeUrl($block->getBackUrl()) ?>" class="back action-default scalable" style="margin-left:24px;">
+                <span><?= $block->escapeHtml(__('Back to list')) ?></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $block->escapeHtml(__('Items')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <?php $items = $block->getItems(); ?>
+        <?php if ($items === []): ?>
+            <p><?= $block->escapeHtml(__('No items.')) ?></p>
+        <?php else: ?>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('SKU')) ?></th>
+                        <th><?= $block->escapeHtml(__('Qty')) ?></th>
+                        <th><?= $block->escapeHtml(__('Price (locked)')) ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($items as $item): ?>
+                    <tr>
+                        <td><?= $block->escapeHtml((string) $item->getSku()) ?></td>
+                        <td><?= $block->escapeHtml(rtrim(rtrim(number_format((float) $item->getQty(), 4, '.', ''), '0'), '.')) ?></td>
+                        <td><?= $block->escapeHtml(number_format((float) $item->getPrice(), 2)) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $block->escapeHtml(__('Charge History')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <?php $charges = $block->getCharges(); ?>
+        <?php if ($charges === []): ?>
+            <p><?= $block->escapeHtml(__('No charges yet.')) ?></p>
+        <?php else: ?>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th><?= $block->escapeHtml(__('Scheduled')) ?></th>
+                        <th><?= $block->escapeHtml(__('Attempted')) ?></th>
+                        <th><?= $block->escapeHtml(__('Status')) ?></th>
+                        <th><?= $block->escapeHtml(__('Attempt #')) ?></th>
+                        <th><?= $block->escapeHtml(__('Order')) ?></th>
+                        <th><?= $block->escapeHtml(__('RefNum')) ?></th>
+                        <th><?= $block->escapeHtml(__('Correlation ID')) ?></th>
+                        <th><?= $block->escapeHtml(__('Error')) ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($charges as $charge): ?>
+                    <?php
+                        $orderId = $charge->getMagentoOrderId();
+                        $orderUrl = $block->getOrderViewUrl($orderId);
+                        $orderIncrement = $block->getOrderIncrement($orderId);
+                    ?>
+                    <tr>
+                        <td><?= $block->escapeHtml((string) $charge->getScheduledFor()) ?></td>
+                        <td><?= $block->escapeHtml((string) ($charge->getAttemptedAt() ?? '—')) ?></td>
+                        <td><?= $block->escapeHtml(ucfirst($charge->getStatus())) ?></td>
+                        <td><?= (int) $charge->getAttemptCount() ?></td>
+                        <td>
+                            <?php if ($orderUrl !== null && $orderIncrement !== null): ?>
+                                <a href="<?= $block->escapeUrl($orderUrl) ?>"><?= $block->escapeHtml($orderIncrement) ?></a>
+                            <?php else: ?>
+                                —
+                            <?php endif; ?>
+                        </td>
+                        <td><?= $block->escapeHtml((string) ($charge->getGatewayRefNum() ?? '—')) ?></td>
+                        <td><?= $block->escapeHtml((string) $charge->getCorrelationId()) ?></td>
+                        <td><?= $block->escapeHtml((string) ($charge->getErrorMessage() ?? '')) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+<?php
+/** @var \Gtstudio\Ebizcharge\Block\System\Config\TestConnectionButton $block */
+$secureRenderer = $block->getSecureRenderer();
+?>
+<button type="button" id="<?= $block->escapeHtmlAttr($block->getHtmlId()) ?>" class="action-default scalable">
+    <span><?= $block->escapeHtml($block->getButtonLabel()) ?></span>
+</button>
+<span id="<?= $block->escapeHtmlAttr($block->getHtmlId()) ?>_result" style="margin-left:12px;"></span>
+
+<script type="text/x-magento-init">
+{
+    "#<?= $block->escapeHtmlAttr($block->getHtmlId()) ?>": {
+        "Gtstudio_Ebizcharge/js/system/test-connection": {
+            "ajaxUrl": "<?= $block->escapeUrl($block->getAjaxUrl()) ?>",
+            "resultId": "<?= $block->escapeHtmlAttr($block->getHtmlId()) ?>_result",
+            "userIdField": "<?= $block->escapeHtmlAttr($block->getUserIdField()) ?>",
+            "securityIdField": "<?= $block->escapeHtmlAttr($block->getSecurityIdField()) ?>",
+            "passwordField": "<?= $block->escapeHtmlAttr($block->getPasswordField()) ?>",
+            "endpointModeField": "<?= $block->escapeHtmlAttr($block->getEndpointModeField()) ?>",
+            "endpointOverrideField": "<?= $block->escapeHtmlAttr($block->getEndpointOverrideField()) ?>"
+        }
+    }
+}
+</script>

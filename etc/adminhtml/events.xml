@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="adminhtml_customer_prepare_save">
+        <observer name="gtstudio_ebizcharge_validate_customer_identity"
+                  instance="Gtstudio\Ebizcharge\Observer\Adminhtml\PrepareCustomerIdentitySave"/>
+    </event>
+    <event name="adminhtml_customer_save_after">
+        <observer name="gtstudio_ebizcharge_reset_changed_customer_identity"
+                  instance="Gtstudio\Ebizcharge\Observer\Adminhtml\AfterCustomerIdentitySave"/>
+    </event>
+</config>

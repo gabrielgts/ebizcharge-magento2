@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">gtstudio_ebizcharge_debug_trace_listing.gtstudio_ebizcharge_debug_trace_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>gtstudio_ebizcharge_debug_trace_columns</spinner>
+        <deps>
+            <dep>gtstudio_ebizcharge_debug_trace_listing.gtstudio_ebizcharge_debug_trace_listing_data_source</dep>
+        </deps>
+    </settings>
+
+    <dataSource name="gtstudio_ebizcharge_debug_trace_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">entity_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Gtstudio_Ebizcharge::debug_trace_view</aclResource>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider"
+                      name="gtstudio_ebizcharge_debug_trace_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+
+    <columns name="gtstudio_ebizcharge_debug_trace_columns">
+        <column name="entity_id">
+            <settings>
+                <filter>textRange</filter>
+                <sorting>desc</sorting>
+                <label translate="true">ID</label>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">When</label>
+            </settings>
+        </column>
+        <column name="soap_method">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">SOAP Method</label>
+            </settings>
+        </column>
+        <column name="command">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Command</label>
+            </settings>
+        </column>
+        <column name="result_code">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Result</label>
+            </settings>
+        </column>
+        <column name="ref_num">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">RefNum</label>
+            </settings>
+        </column>
+        <column name="latency_ms">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Latency (ms)</label>
+            </settings>
+        </column>
+        <column name="correlation_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Correlation ID</label>
+            </settings>
+        </column>
+        <column name="error_message">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Error</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <column name="endpoint">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Endpoint</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+    </columns>
+</listing>

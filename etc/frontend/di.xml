@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="gtstudio_ebizcharge_config_provider"
+                      xsi:type="object">Gtstudio\Ebizcharge\Model\Ui\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!--
+        Registers the CC method with Magento's own cc-form config provider, which emits
+        checkoutConfig.payment.ccform.{availableTypes,months,years,hasVerification,cvvImageUrl}
+        keyed by method code. Magento_Payment/js/view/payment/cc-form (our renderer's parent)
+        reads those keys directly; without this entry getCcMonths() dereferences an undefined
+        `months` map and Knockout aborts the rest of the form's bindings.
+        The ACH method extends Magento_Checkout's default renderer, not cc-form, so it is
+        deliberately not listed here.
+    -->
+    <type name="Magento\Payment\Model\CcGenericConfigProvider">
+        <arguments>
+            <argument name="methodCodes" xsi:type="array">
+                <item name="gtstudio_ebizcharge" xsi:type="string">gtstudio_ebizcharge</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

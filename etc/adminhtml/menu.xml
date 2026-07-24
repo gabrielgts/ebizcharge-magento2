@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Gtstudio_Ebizcharge::subscriptions"
+             title="EBizCharge Subscriptions"
+             module="Gtstudio_Ebizcharge"
+             sortOrder="80"
+             parent="Magento_Sales::sales"
+             action="gtstudio_ebizcharge/subscription/index"
+             resource="Gtstudio_Ebizcharge::subscription_view"/>
+        <add id="Gtstudio_Ebizcharge::debug_traces"
+             title="EBizCharge Debug Traces"
+             module="Gtstudio_Ebizcharge"
+             sortOrder="90"
+             parent="Magento_Sales::sales"
+             action="gtstudio_ebizcharge/debugTrace/index"
+             resource="Gtstudio_Ebizcharge::debug_trace_view"/>
+    </menu>
+</config>

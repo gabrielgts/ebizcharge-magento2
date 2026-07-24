@@ -1,0 +1,615 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- ===================== SUBSCRIPTION DOMAIN ===================== -->
+    <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionInterface" type="Gtstudio\Ebizcharge\Model\Subscription"/>
+    <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionItemInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionItem"/>
+    <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionChargeInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionCharge"/>
+    <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionChargeSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Gtstudio\Ebizcharge\Api\SubscriptionRepositoryInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionRepository"/>
+    <preference for="Gtstudio\Ebizcharge\Api\SubscriptionChargeRepositoryInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionChargeRepository"/>
+    <preference for="Gtstudio\Ebizcharge\Api\SubscriptionScheduleInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionSchedule"/>
+    <preference for="Gtstudio\Ebizcharge\Api\SubscriptionLifecycleInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionLifecycle"/>
+    <preference for="Gtstudio\Ebizcharge\Api\SubscriptionChargeEngineInterface" type="Gtstudio\Ebizcharge\Service\SubscriptionChargeEngine"/>
+
+    <!-- Magento_Ui listing data source: maps the listing name to the subscription collection -->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="gtstudio_ebizcharge_subscription_listing_data_source"
+                      xsi:type="string">Gtstudio\Ebizcharge\Model\ResourceModel\Subscription\Grid\Collection</item>
+                <item name="gtstudio_ebizcharge_debug_trace_listing_data_source"
+                      xsi:type="string">Gtstudio\Ebizcharge\Model\ResourceModel\DebugTrace\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Wrap the resource collection with the SearchResultInterface signature the listing needs -->
+    <virtualType name="Gtstudio\Ebizcharge\Model\ResourceModel\Subscription\Grid\Collection"
+                 type="Gtstudio\Ebizcharge\Model\ResourceModel\Subscription\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">gtstudio_ebizcharge_subscription</argument>
+            <argument name="resourceModel" xsi:type="string">Gtstudio\Ebizcharge\Model\ResourceModel\Subscription</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ===================== LOGGER ===================== -->
+    <virtualType name="Gtstudio\Ebizcharge\Logger\Handler\Virtual" type="Gtstudio\Ebizcharge\Logger\Handler"/>
+    <type name="Gtstudio\Ebizcharge\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">gtstudio_ebizcharge</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Gtstudio\Ebizcharge\Logger\Handler\Virtual</item>
+            </argument>
+            <argument name="processors" xsi:type="array">
+                <item name="redaction" xsi:type="object">Gtstudio\Ebizcharge\Service\RedactionFilter</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- ===================== CONFIG ===================== -->
+    <virtualType name="Gtstudio\Ebizcharge\Gateway\Config\Config\Method" type="Gtstudio\Ebizcharge\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Gtstudio\Ebizcharge\Gateway\Config\Config::METHOD_CODE</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Gtstudio\Ebizcharge\Gateway\Config\Config\AchMethod" type="Gtstudio\Ebizcharge\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Gtstudio\Ebizcharge\Gateway\Config\Config::METHOD_CODE_ACH</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Gtstudio\Ebizcharge\Gateway\Config\Config\VaultMethod" type="Gtstudio\Ebizcharge\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Gtstudio\Ebizcharge\Gateway\Config\Config::METHOD_CODE_VAULT</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Inject the ACH config virtualType into the checkout ConfigProvider -->
+    <type name="Gtstudio\Ebizcharge\Model\Ui\ConfigProvider">
+        <arguments>
+            <argument name="achConfig" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Config\Config\AchMethod</argument>
+        </arguments>
+    </type>
+
+    <!-- ===================== BASE PAYMENT METHOD ADAPTER ===================== -->
+    <virtualType name="GtstudioEbizchargeFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="const">Gtstudio\Ebizcharge\Gateway\Config\Config::METHOD_CODE</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form\Cc</argument>
+            <argument name="infoBlockType" xsi:type="string">Gtstudio\Ebizcharge\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">GtstudioEbizchargeValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">GtstudioEbizchargeCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="GtstudioEbizchargeValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">GtstudioEbizchargeConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="GtstudioEbizchargeConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Config\Config\Method</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Single command pool — handles both PAN flow (authorize/sale) and vault flow (vault_authorize/vault_sale).
+         Capture/refund/void are shared. The vault method (Magento\Vault\Model\Method\Vault) looks up
+         vault_authorize/vault_sale via CommandManagerPool keyed on the base method code. -->
+    <virtualType name="GtstudioEbizchargeCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="authorize" xsi:type="string">GtstudioEbizchargeAuthorizeCommand</item>
+                <item name="sale" xsi:type="string">GtstudioEbizchargeSaleCommand</item>
+                <item name="capture" xsi:type="string">GtstudioEbizchargeCaptureCommand</item>
+                <item name="refund" xsi:type="string">GtstudioEbizchargeRefundCommand</item>
+                <item name="void" xsi:type="string">GtstudioEbizchargeVoidCommand</item>
+                <item name="cancel" xsi:type="string">GtstudioEbizchargeVoidCommand</item>
+                <item name="vault_authorize" xsi:type="string">GtstudioEbizchargeVaultAuthorizeCommand</item>
+                <item name="vault_sale" xsi:type="string">GtstudioEbizchargeVaultSaleCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Register our CommandManager so the Vault wrapper can look up commands by method code. -->
+    <type name="Magento\Payment\Gateway\Command\CommandManagerPool">
+        <arguments>
+            <argument name="executors" xsi:type="array">
+                <item name="gtstudio_ebizcharge" xsi:type="string">GtstudioEbizchargeCommandManager</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="GtstudioEbizchargeCommandManager" type="Magento\Payment\Gateway\Command\CommandManager">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">GtstudioEbizchargeCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ===================== PAN flow: AUTHORIZE ===================== -->
+    <virtualType name="GtstudioEbizchargeAuthorizeCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeAuthorizeRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\VaultingClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeResponseHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAuthorizeRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="amount" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AmountBuilder</item>
+                <item name="customer" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\CustomerDataBuilder</item>
+                <item name="address" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AddressBuilder</item>
+                <item name="line_items" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\LineItemsBuilder</item>
+                <item name="payment_data" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\PaymentDataBuilder</item>
+                <item name="vault_profile" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\VaultProfileDataBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeAuthorizeCommandBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeAuthorizeIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAuthorizeCommandBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\CommandBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">authonly</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAuthorizeIdempotencyBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\IdempotencyHeaderBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">authonly</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ===================== PAN flow: SALE (auth+capture) ===================== -->
+    <virtualType name="GtstudioEbizchargeSaleCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeSaleRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\VaultingClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeResponseHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeSaleRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="amount" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AmountBuilder</item>
+                <item name="customer" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\CustomerDataBuilder</item>
+                <item name="address" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AddressBuilder</item>
+                <item name="line_items" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\LineItemsBuilder</item>
+                <item name="payment_data" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\PaymentDataBuilder</item>
+                <item name="vault_profile" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\VaultProfileDataBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeSaleCommandBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeSaleIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeSaleCommandBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\CommandBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">sale</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeSaleIdempotencyBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\IdempotencyHeaderBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">sale</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ===================== Vault flow: VAULT_AUTHORIZE ===================== -->
+    <virtualType name="GtstudioEbizchargeVaultAuthorizeCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeVaultAuthorizeRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\SoapClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeVaultResponseHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeVaultAuthorizeRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="amount" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AmountBuilder</item>
+                <item name="address" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AddressBuilder</item>
+                <item name="line_items" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\LineItemsBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeAuthorizeCommandBuilder</item>
+                <item name="vault_data" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\VaultDataBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeAuthorizeIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ===================== Vault flow: VAULT_SALE ===================== -->
+    <virtualType name="GtstudioEbizchargeVaultSaleCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeVaultSaleRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\SoapClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeVaultResponseHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeVaultSaleRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="amount" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AmountBuilder</item>
+                <item name="address" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AddressBuilder</item>
+                <item name="line_items" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\LineItemsBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeSaleCommandBuilder</item>
+                <item name="vault_data" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\VaultDataBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeSaleIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ===================== CAPTURE / REFUND / VOID (shared by PAN and vault) ===================== -->
+    <virtualType name="GtstudioEbizchargeCaptureCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeCaptureRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\SoapClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeVaultResponseHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeCaptureRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="amount" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AmountBuilder</item>
+                <item name="reference" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\RefundCaptureVoidBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeCaptureCommandBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeCaptureIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeCaptureCommandBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\CommandBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">capture</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeCaptureIdempotencyBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\IdempotencyHeaderBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">capture</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="GtstudioEbizchargeRefundCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeRefundRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\SoapClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeRefundHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeRefundRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="amount" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AmountBuilder</item>
+                <item name="reference" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\RefundCaptureVoidBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeRefundCommandBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeRefundIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeRefundCommandBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\CommandBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">refund</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeRefundIdempotencyBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\IdempotencyHeaderBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">refund</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeRefundHandlerComposite" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="txid" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\TransactionIdHandler</item>
+                <item name="details" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\PaymentDetailsHandler</item>
+                <item name="close" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\CloseTransactionHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="GtstudioEbizchargeVoidCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeVoidRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\SoapClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeRefundHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeVoidRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="reference" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\RefundCaptureVoidBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeVoidCommandBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeVoidIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeVoidCommandBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\CommandBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">creditvoid</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeVoidIdempotencyBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\IdempotencyHeaderBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">creditvoid</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ===================== RESPONSE HANDLER CHAINS ===================== -->
+    <!-- PAN flow: also creates vault token when "save card" was checked -->
+    <virtualType name="GtstudioEbizchargeResponseHandlerComposite" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="txid" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\TransactionIdHandler</item>
+                <item name="details" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\PaymentDetailsHandler</item>
+                <item name="vault" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\VaultDetailsHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <!-- Vault & subsequent operations: token already exists, no creation needed -->
+    <virtualType name="GtstudioEbizchargeVaultResponseHandlerComposite" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="txid" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\TransactionIdHandler</item>
+                <item name="details" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\PaymentDetailsHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ===================== VAULT METHOD ADAPTER ===================== -->
+    <virtualType name="GtstudioEbizchargeVaultFacade" type="Magento\Vault\Model\Method\Vault">
+        <arguments>
+            <argument name="config" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Config\Config\VaultMethod</argument>
+            <argument name="valueHandlerPool" xsi:type="object">GtstudioEbizchargeVaultValueHandlerPool</argument>
+            <argument name="vaultProvider" xsi:type="object">GtstudioEbizchargeFacade</argument>
+            <argument name="code" xsi:type="string">gtstudio_ebizcharge_cc_vault</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="GtstudioEbizchargeVaultValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">GtstudioEbizchargeVaultConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeVaultConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Config\Config\VaultMethod</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- TokenUiComponentProvider — hooks our cards into the standard saved-cards UI -->
+    <type name="Magento\Vault\Model\Ui\TokensConfigProvider">
+        <arguments>
+            <argument name="tokenUiComponentProviders" xsi:type="array">
+                <item name="gtstudio_ebizcharge" xsi:type="object">Gtstudio\Ebizcharge\Model\Vault\TokenUiComponentProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- ===================== ACH PAYMENT METHOD ===================== -->
+    <virtualType name="GtstudioEbizchargeAchFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="const">Gtstudio\Ebizcharge\Gateway\Config\Config::METHOD_CODE_ACH</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Gtstudio\Ebizcharge\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">GtstudioEbizchargeAchValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">GtstudioEbizchargeAchCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="GtstudioEbizchargeAchValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">GtstudioEbizchargeAchConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAchConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Config\Config\AchMethod</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ACH command pool: sale (check), refund (checkcredit), void (creditvoid).
+         No authonly — ACH gateways don't support authorize-only.
+         vault_authorize/vault_sale call runCustomerTransaction with stored ACH method id. -->
+    <virtualType name="GtstudioEbizchargeAchCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="sale" xsi:type="string">GtstudioEbizchargeAchSaleCommand</item>
+                <item name="capture" xsi:type="string">GtstudioEbizchargeAchSaleCommand</item>
+                <item name="refund" xsi:type="string">GtstudioEbizchargeAchRefundCommand</item>
+                <item name="void" xsi:type="string">GtstudioEbizchargeVoidCommand</item>
+                <item name="cancel" xsi:type="string">GtstudioEbizchargeVoidCommand</item>
+                <item name="vault_authorize" xsi:type="string">GtstudioEbizchargeAchVaultSaleCommand</item>
+                <item name="vault_sale" xsi:type="string">GtstudioEbizchargeAchVaultSaleCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Register ACH CommandManager so the ACH vault wrapper can resolve commands by base method code -->
+    <type name="Magento\Payment\Gateway\Command\CommandManagerPool">
+        <arguments>
+            <argument name="executors" xsi:type="array">
+                <item name="gtstudio_ebizcharge_ach" xsi:type="string">GtstudioEbizchargeAchCommandManager</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="GtstudioEbizchargeAchCommandManager" type="Magento\Payment\Gateway\Command\CommandManager">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">GtstudioEbizchargeAchCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ACH SALE (sends `check` command) -->
+    <virtualType name="GtstudioEbizchargeAchSaleCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeAchSaleRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\SoapClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeAchResponseHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAchSaleRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="amount" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AmountBuilder</item>
+                <item name="customer" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\CustomerDataBuilder</item>
+                <item name="address" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AddressBuilder</item>
+                <item name="ach_data" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AchDataBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeAchCheckCommandBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeAchCheckIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAchCheckCommandBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\CommandBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">check</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAchCheckIdempotencyBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\IdempotencyHeaderBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">check</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ACH REFUND (sends `checkcredit` command) -->
+    <virtualType name="GtstudioEbizchargeAchRefundCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeAchRefundRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\SoapClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeRefundHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAchRefundRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="amount" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AmountBuilder</item>
+                <item name="reference" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\RefundCaptureVoidBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeAchCheckCreditCommandBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeAchCheckCreditIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAchCheckCreditCommandBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\CommandBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">checkcredit</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAchCheckCreditIdempotencyBuilder" type="Gtstudio\Ebizcharge\Gateway\Request\IdempotencyHeaderBuilder">
+        <arguments>
+            <argument name="command" xsi:type="string">checkcredit</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ACH VAULT SALE (uses runCustomerTransaction with saved ACH method) -->
+    <virtualType name="GtstudioEbizchargeAchVaultSaleCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GtstudioEbizchargeAchVaultSaleRequest</argument>
+            <argument name="transferFactory" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Http\Client\SoapClient</argument>
+            <argument name="handler" xsi:type="object">GtstudioEbizchargeVaultResponseHandlerComposite</argument>
+            <argument name="validator" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Validator\ResponseValidator</argument>
+            <argument name="logger" xsi:type="object">Gtstudio\Ebizcharge\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GtstudioEbizchargeAchVaultSaleRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="auth" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AuthenticationDataBuilder</item>
+                <item name="amount" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AmountBuilder</item>
+                <item name="address" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AddressBuilder</item>
+                <item name="command" xsi:type="string">GtstudioEbizchargeAchCheckCommandBuilder</item>
+                <item name="vault_data" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Request\AchVaultDataBuilder</item>
+                <item name="idempotency" xsi:type="string">GtstudioEbizchargeAchCheckIdempotencyBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ACH response handler chain (PAN-equivalent flow + vault token creation when "save" was checked) -->
+    <virtualType name="GtstudioEbizchargeAchResponseHandlerComposite" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="txid" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\TransactionIdHandler</item>
+                <item name="details" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\PaymentDetailsHandler</item>
+                <item name="vault" xsi:type="string">Gtstudio\Ebizcharge\Gateway\Response\VaultDetailsHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- ACH VAULT WRAPPER -->
+    <virtualType name="GtstudioEbizchargeAchVaultFacade" type="Magento\Vault\Model\Method\Vault">
+        <arguments>
+            <argument name="config" xsi:type="object">Gtstudio\Ebizcharge\Gateway\Config\Config\AchMethod</argument>
+            <argument name="valueHandlerPool" xsi:type="object">GtstudioEbizchargeAchValueHandlerPool</argument>
+            <argument name="vaultProvider" xsi:type="object">GtstudioEbizchargeAchFacade</argument>
+            <argument name="code" xsi:type="string">gtstudio_ebizcharge_ach_vault</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Register ACH TokenUiComponentProvider — saved bank accounts appear in checkout -->
+    <type name="Magento\Vault\Model\Ui\TokensConfigProvider">
+        <arguments>
+            <argument name="tokenUiComponentProviders" xsi:type="array">
+                <item name="gtstudio_ebizcharge_ach" xsi:type="object">Gtstudio\Ebizcharge\Model\Vault\AchTokenUiComponentProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Vault\Model\PaymentTokenRepository">
+        <plugin name="gtstudio_ebizcharge_delete_remote_card_profile"
+                type="Gtstudio\Ebizcharge\Plugin\Vault\DeleteStoredCardPlugin"
+                sortOrder="20"/>
+    </type>
+
+    <!-- ===================== CLI COMMANDS ===================== -->
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="gtstudio_ebizcharge_vault_migrate"
+                      xsi:type="object">Gtstudio\Ebizcharge\Console\Command\MigrateLegacyTokens</item>
+                <item name="gtstudio_ebizcharge_subscription_migrate_legacy"
+                      xsi:type="object">Gtstudio\Ebizcharge\Console\Command\MigrateLegacySubscriptions</item>
+                <item name="gtstudio_ebizcharge_probe"
+                      xsi:type="object">Gtstudio\Ebizcharge\Console\Command\Probe</item>
+                <item name="gtstudio_ebizcharge_customer_check"
+                      xsi:type="object">Gtstudio\Ebizcharge\Console\Command\CheckCustomerIdentity</item>
+                <item name="gtstudio_ebizcharge_customer_sync"
+                      xsi:type="object">Gtstudio\Ebizcharge\Console\Command\SyncCustomerIdentity</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

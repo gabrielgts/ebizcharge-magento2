@@ -1,0 +1,13 @@
+<?php
+/** @var \Gtstudio\Ebizcharge\Block\Info $block */
+$specificInfo = $block->getSpecificInformation();
+?>
+<dl class="payment-method gtstudio-ebizcharge">
+    <dt><?= $block->escapeHtml($block->getMethod()->getTitle()) ?></dt>
+    <?php foreach ($specificInfo as $label => $value): ?>
+        <dd>
+            <span class="label"><?= $block->escapeHtml($label) ?>:</span>
+            <span class="value"><?= $block->escapeHtml(is_array($value) ? implode(', ', $value) : (string) $value) ?></span>
+        </dd>
+    <?php endforeach; ?>
+</dl>

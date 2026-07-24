@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">gtstudio_ebizcharge_subscription_listing.gtstudio_ebizcharge_subscription_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>gtstudio_ebizcharge_subscription_columns</spinner>
+        <deps>
+            <dep>gtstudio_ebizcharge_subscription_listing.gtstudio_ebizcharge_subscription_listing_data_source</dep>
+        </deps>
+    </settings>
+
+    <dataSource name="gtstudio_ebizcharge_subscription_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">entity_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Gtstudio_Ebizcharge::subscription_view</aclResource>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider"
+                      name="gtstudio_ebizcharge_subscription_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters">
+            <filterSelect name="status" provider="${ $.parentName }">
+                <settings>
+                    <options class="Gtstudio\Ebizcharge\Model\Adminhtml\Source\SubscriptionStatus"/>
+                    <caption translate="true">Select...</caption>
+                    <label translate="true">Status</label>
+                    <dataScope>status</dataScope>
+                </settings>
+            </filterSelect>
+            <filterSelect name="frequency" provider="${ $.parentName }">
+                <settings>
+                    <options class="Gtstudio\Ebizcharge\Model\Adminhtml\Source\SubscriptionFrequency"/>
+                    <caption translate="true">Select...</caption>
+                    <label translate="true">Frequency</label>
+                    <dataScope>frequency</dataScope>
+                </settings>
+            </filterSelect>
+        </filters>
+        <paging name="listing_paging"/>
+        <massaction name="listing_massaction">
+            <action name="pause">
+                <settings>
+                    <type>pause</type>
+                    <label translate="true">Pause</label>
+                    <url path="gtstudio_ebizcharge/subscription/massPause"/>
+                    <confirm>
+                        <message translate="true">Pause the selected subscriptions?</message>
+                        <title translate="true">Pause Subscriptions</title>
+                    </confirm>
+                </settings>
+            </action>
+            <action name="resume">
+                <settings>
+                    <type>resume</type>
+                    <label translate="true">Resume</label>
+                    <url path="gtstudio_ebizcharge/subscription/massResume"/>
+                    <confirm>
+                        <message translate="true">Resume the selected subscriptions?</message>
+                        <title translate="true">Resume Subscriptions</title>
+                    </confirm>
+                </settings>
+            </action>
+            <action name="cancel">
+                <settings>
+                    <type>cancel</type>
+                    <label translate="true">Cancel</label>
+                    <url path="gtstudio_ebizcharge/subscription/massCancel"/>
+                    <confirm>
+                        <message translate="true">Cancel the selected subscriptions? This is permanent.</message>
+                        <title translate="true">Cancel Subscriptions</title>
+                    </confirm>
+                </settings>
+            </action>
+            <action name="charge_now">
+                <settings>
+                    <type>charge_now</type>
+                    <label translate="true">Charge Now</label>
+                    <url path="gtstudio_ebizcharge/subscription/massChargeNow"/>
+                    <confirm>
+                        <message translate="true">Force an immediate charge for the selected subscriptions?</message>
+                        <title translate="true">Charge Now</title>
+                    </confirm>
+                </settings>
+            </action>
+        </massaction>
+    </listingToolbar>
+
+    <columns name="gtstudio_ebizcharge_subscription_columns">
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>entity_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="entity_id">
+            <settings>
+                <filter>textRange</filter>
+                <sorting>desc</sorting>
+                <label translate="true">ID</label>
+            </settings>
+        </column>
+        <column name="customer_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Customer ID</label>
+            </settings>
+        </column>
+        <column name="status" class="Gtstudio\Ebizcharge\Ui\Component\Listing\Column\Status">
+            <settings>
+                <options class="Gtstudio\Ebizcharge\Model\Adminhtml\Source\SubscriptionStatus"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <bodyTmpl>ui/grid/cells/html</bodyTmpl>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+        <column name="frequency">
+            <settings>
+                <options class="Gtstudio\Ebizcharge\Model\Adminhtml\Source\SubscriptionFrequency"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Frequency</label>
+            </settings>
+        </column>
+        <column name="amount" class="Magento\Sales\Ui\Component\Listing\Column\Price">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Amount</label>
+            </settings>
+        </column>
+        <column name="next_bill_date" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Next Bill</label>
+            </settings>
+        </column>
+        <column name="completed_cycles">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Completed</label>
+            </settings>
+        </column>
+        <column name="failure_count">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Failures</label>
+            </settings>
+        </column>
+        <column name="last_charged_at" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Last Charged</label>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Created</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Gtstudio\Ebizcharge\Ui\Component\Listing\Column\Actions">
+            <settings>
+                <indexField>entity_id</indexField>
+                <resizeEnabled>false</resizeEnabled>
+                <resizeDefaultWidth>120</resizeDefaultWidth>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

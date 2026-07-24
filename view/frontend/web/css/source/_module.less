@@ -1,0 +1,66 @@
+// Wrapper for the animated card visual on the Gtstudio EBizCharge checkout renderer.
+// Centers the 280px card above the form and gives it breathing room on mobile.
+.gtstudio-card-visual-wrapper {
+    margin: 0 auto 24px;
+    text-align: center;
+
+    .jp-card-container {
+        margin: 0 auto;
+    }
+}
+
+.gtstudio-ebizcharge-card-form {
+    .fieldset.ccard {
+        > .field {
+            max-width: 768px;
+
+            > .label,
+            > .control {
+                display: block;
+                margin-left: 0;
+                width: 100%;
+            }
+
+            > .control {
+                box-sizing: border-box;
+            }
+        }
+
+        .gtstudio-save-card,
+        .field.type {
+            display: none;
+        }
+
+        .field.name,
+        .field.number {
+            .control,
+            .input-text,
+            .select {
+                box-sizing: border-box;
+                width: 100%;
+            }
+        }
+
+        .fields.group {
+            display: flex;
+            gap: 6px;
+
+            > .field {
+                margin: 0;
+                padding: 0;
+            }
+        }
+
+        .field.month .select {
+            width: 140px;
+        }
+
+        .field.year .select {
+            width: 80px;
+        }
+
+        .field.cvv .input-text {
+            width: 54px;
+        }
+    }
+}

@@ -1,0 +1,23 @@
+<!--@subject {{trans "Your saved card is about to expire"}} @-->
+<!--@vars {
+"var token.maskedCC":"Masked card number",
+"var token.type":"Card brand",
+"var token.expiration":"Expiration date",
+"var subscription.label":"Subscription label",
+"var update_payment_url":"Link to update payment method"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<table>
+    <tr><td>
+        <h1>{{trans "Your saved card expires soon"}}</h1>
+        <p>{{trans "The %type card ending in %last4 (expires %exp) is on file for your subscription %label." type=$token.type last4=$token.maskedCC exp=$token.expiration label=$subscription.label}}</p>
+
+        <p>{{trans "When this card expires, your next subscription charge will fail. Please add a new card now so the renewal goes through smoothly:"}}</p>
+
+        <p><a href="{{var update_payment_url}}" style="background:#1979c3;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;">{{trans "Update Payment Method"}}</a></p>
+    </td></tr>
+</table>
+
+{{template config_path="design/email/footer_template"}}

@@ -1,0 +1,68 @@
+<?php
+/**
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Gtstudio\Ebizcharge\ViewModel\Customer\SubscriptionView $viewModel
+ */
+$viewModel = $block->getData('view_model');
+$subscription = $viewModel->getSubscription();
+?>
+<?php if ($subscription === null): ?>
+    <p><?= $block->escapeHtml(__('Subscription not found.')) ?></p>
+<?php else: ?>
+    <div class="block block-gtstudio-subscription-view">
+        <div class="block-title">
+            <strong><?= $block->escapeHtml(__('Subscription #%1', $subscription->getEntityId())) ?></strong>
+        </div>
+        <div class="block-content">
+            <dl class="gtstudio-subscription-summary">
+                <dt><?= $block->escapeHtml(__('Status')) ?></dt>
+                <dd><?= $block->escapeHtml(ucfirst($subscription->getStatus())) ?></dd>
+                <dt><?= $block->escapeHtml(__('Frequency')) ?></dt>
+                <dd><?= $block->escapeHtml(ucfirst($subscription->getFrequency())) ?></dd>
+                <dt><?= $block->escapeHtml(__('Amount')) ?></dt>
+                <dd><?= $block->escapeHtml(sprintf('%s %s', number_format($subscription->getAmount(), 2), $subscription->getCurrencyCode())) ?></dd>
+                <dt><?= $block->escapeHtml(__('Next Charge')) ?></dt>
+                <dd><?= $block->escapeHtml($subscription->getNextBillDate() ?? '—') ?></dd>
+                <dt><?= $block->escapeHtml(__('Cycles Completed')) ?></dt>
+                <dd><?= (int) $subscription->getCompletedCycles() ?>
+                    <?php if ($subscription->getMaxCycles() !== null): ?>
+                        / <?= (int) $subscription->getMaxCycles() ?>
+                    <?php endif; ?>
+                </dd>
+                <dt><?= $block->escapeHtml(__('Last Charged')) ?></dt>
+                <dd><?= $block->escapeHtml((string) ($subscription->getLastChargedAt() ?? '—')) ?></dd>
+            </dl>
+
+            <h3 class="gtstudio-subscription-history-title"><?= $block->escapeHtml(__('Charge History')) ?></h3>
+            <?php $charges = $viewModel->getCharges(); ?>
+            <?php if ($charges === []): ?>
+                <p><?= $block->escapeHtml(__('No charges yet.')) ?></p>
+            <?php else: ?>
+                <table class="data table">
+                    <thead>
+                        <tr>
+                            <th><?= $block->escapeHtml(__('Scheduled')) ?></th>
+                            <th><?= $block->escapeHtml(__('Attempted')) ?></th>
+                            <th><?= $block->escapeHtml(__('Status')) ?></th>
+                            <th><?= $block->escapeHtml(__('Reference')) ?></th>
+                            <th><?= $block->escapeHtml(__('Notes')) ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($charges as $charge): ?>
+                        <tr>
+                            <td><?= $block->escapeHtml((string) $charge->getScheduledFor()) ?></td>
+                            <td><?= $block->escapeHtml((string) ($charge->getAttemptedAt() ?? '—')) ?></td>
+                            <td><?= $block->escapeHtml(ucfirst($charge->getStatus())) ?></td>
+                            <td><?= $block->escapeHtml((string) ($charge->getGatewayRefNum() ?? '—')) ?></td>
+                            <td><?= $block->escapeHtml((string) ($charge->getErrorMessage() ?? '')) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+
+            <p class="actions-toolbar"><a href="<?= $block->escapeUrl($block->getUrl('gtstudio_ebizcharge/subscription/index')) ?>"><?= $block->escapeHtml(__('Back to subscriptions')) ?></a></p>
+        </div>
+    </div>
+<?php endif; ?>

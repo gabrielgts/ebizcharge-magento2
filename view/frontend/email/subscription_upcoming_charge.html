@@ -1,0 +1,23 @@
+<!--@subject {{trans "Your subscription will be charged soon"}} @-->
+<!--@vars {
+"var subscription.label":"Subscription label",
+"var subscription.amount":"Amount",
+"var subscription.currency":"Currency",
+"var subscription.next_bill_date":"Next bill date",
+"var subscription_view_url":"Link to subscription details"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<table>
+    <tr><td>
+        <h1>{{trans "Heads up — your subscription will renew on %date" date=$subscription.next_bill_date}}</h1>
+        <p>{{trans "We'll charge %amount %currency for %label." amount=$subscription.amount currency=$subscription.currency label=$subscription.label}}</p>
+
+        <p>{{trans "If you'd like to pause, cancel, or change the payment method, you can do so here:"}}</p>
+
+        <p><a href="{{var subscription_view_url}}" style="background:#1979c3;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;">{{trans "Manage Subscription"}}</a></p>
+    </td></tr>
+</table>
+
+{{template config_path="design/email/footer_template"}}

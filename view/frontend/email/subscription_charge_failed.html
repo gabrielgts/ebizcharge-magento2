@@ -1,0 +1,31 @@
+<!--@subject {{trans "We couldn't process your subscription payment"}} @-->
+<!--@vars {
+"var subscription.label":"Subscription label",
+"var subscription.amount":"Amount",
+"var subscription.currency":"Currency",
+"var charge.error_message":"Error message",
+"var update_payment_url":"Link to update payment method",
+"var subscription_view_url":"Link to subscription details"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<table>
+    <tr><td>
+        <h1>{{trans "Your payment didn't go through"}}</h1>
+        <p>{{trans "We tried to charge %amount %currency for %label but the bank declined the transaction." amount=$subscription.amount currency=$subscription.currency label=$subscription.label}}</p>
+
+        {{depend charge.error_message}}
+            <p><strong>{{trans "Reason:"}}</strong> {{var charge.error_message}}</p>
+        {{/depend}}
+
+        <p>{{trans "We will retry automatically. To prevent another failure, please update your payment method:"}}</p>
+
+        <p><a href="{{var update_payment_url}}" style="background:#1979c3;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;">{{trans "Update Payment Method"}}</a></p>
+
+        <p>{{trans "Or view your subscription:"}}<br>
+        <a href="{{var subscription_view_url}}">{{var subscription_view_url}}</a></p>
+    </td></tr>
+</table>
+
+{{template config_path="design/email/footer_template"}}

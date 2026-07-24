@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <settings>
+        <buttons>
+            <button name="gtstudio_ebizcharge_sync_identity"
+                    class="Gtstudio\Ebizcharge\Block\Adminhtml\Customer\Edit\SyncIdentityButton"/>
+        </buttons>
+    </settings>
+    <fieldset name="gtstudio_ebizcharge_identity" sortOrder="75">
+        <settings>
+            <label translate="true">EBizCharge Customer Identity</label>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+        </settings>
+        <field name="ebiz_customer_id" formElement="input" sortOrder="10">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">ebizcharge_identity</item>
+                </item>
+            </argument>
+            <settings>
+                <label translate="true">Customer ID</label>
+                <dataType>text</dataType>
+                <notice translate="true">ERP-facing CustomerID. Blank values use the Magento customer ID on the next synchronization.</notice>
+                <validation>
+                    <rule name="max_text_length" xsi:type="number">200</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="customer_internal_id" formElement="input" sortOrder="20">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">ebizcharge_identity</item>
+                    <item name="disabled" xsi:type="boolean">true</item>
+                </item>
+            </argument>
+            <settings>
+                <label translate="true">Customer Internal ID</label>
+                <dataType>text</dataType>
+            </settings>
+        </field>
+        <field name="customer_number" formElement="input" sortOrder="30">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">ebizcharge_identity</item>
+                    <item name="disabled" xsi:type="boolean">true</item>
+                </item>
+            </argument>
+            <settings>
+                <label translate="true">Customer Number (CustNum)</label>
+                <dataType>text</dataType>
+                <notice translate="true">Gateway-generated customer number used by saved-payment transactions.</notice>
+            </settings>
+        </field>
+        <field name="mapping_status" formElement="input" sortOrder="40">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">ebizcharge_identity</item>
+                    <item name="disabled" xsi:type="boolean">true</item>
+                </item>
+            </argument>
+            <settings>
+                <label translate="true">Mapping Health</label>
+                <dataType>text</dataType>
+            </settings>
+        </field>
+        <field name="last_synced_at" formElement="input" sortOrder="50">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">ebizcharge_identity</item>
+                    <item name="disabled" xsi:type="boolean">true</item>
+                </item>
+            </argument>
+            <settings>
+                <label translate="true">Last Verified (UTC)</label>
+                <dataType>text</dataType>
+            </settings>
+        </field>
+    </fieldset>
+</form>
