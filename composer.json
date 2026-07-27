@@ -1,6 +1,6 @@
 {
     "name": "gtstudio/module-ebizcharge",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "EBizCharge payment gateway integration for Magento 2 (replacement for ebizcharge/ebizcharge).",
     "type": "magento2-module",
     "license": [
