@@ -1,10 +1,10 @@
 # Gtstudio EBizCharge for Magento 2
 
-[![Module version](https://img.shields.io/badge/module-1.0.1-1f6feb)](composer.json)
+[![Module version](https://img.shields.io/badge/module-1.0.2-1f6feb)](composer.json)
 [![Magento](https://img.shields.io/badge/Magento-2.x-EE672F?logo=magento&logoColor=white)](https://business.adobe.com/products/magento/magento-commerce.html)
 [![PHP](https://img.shields.io/badge/PHP-8.3%20%7C%208.4-777BB4?logo=php&logoColor=white)](composer.json)
-[![Unit tests](https://img.shields.io/badge/unit_tests-126_passing-2ea44f)](#testing-and-code-coverage)
-[![Line coverage](https://img.shields.io/badge/line_coverage-20.55%25-d29922)](#testing-and-code-coverage)
+[![Unit tests](https://img.shields.io/badge/unit_tests-128_passing-2ea44f)](#testing-and-code-coverage)
+[![Line coverage](https://img.shields.io/badge/line_coverage-20.91%25-d29922)](#testing-and-code-coverage)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 
 `Gtstudio_Ebizcharge` is a server-side EBizCharge Connect payment integration for Magento 2 and
@@ -42,7 +42,7 @@ Composer package: `gtstudio/module-ebizcharge`
 
 Magento module: `Gtstudio_Ebizcharge`
 
-Current module version: `1.0.1`
+Current module version: `1.0.2`
 
 ## Installation
 
@@ -164,19 +164,19 @@ administrative, logging, and checkout environment.
 
 ## Testing and code coverage
 
-Baseline measured on 2026-07-26 with PHP 8.4.6, PHPUnit 10.5.63, and Xdebug 3.4.2:
+Baseline measured on 2026-07-27 with PHP 8.4.6, PHPUnit 10.5.63, and Xdebug 3.4.2:
 
 | Metric | Result |
 |---|---:|
-| Passing unit tests | 126 |
-| Assertions | 282 |
-| Line coverage | 20.55% (675 / 3,284) |
-| Method coverage | 11.49% (51 / 444) |
-| Class coverage | 8.62% (10 / 116) |
+| Passing unit tests | 128 |
+| Assertions | 291 |
+| Line coverage | 20.91% (687 / 3,286) |
+| Method coverage | 11.94% (53 / 444) |
+| Class coverage | 9.48% (11 / 116) |
 
 The coverage baseline excludes `AchDataBuilderTest`. Its four tests currently stop during mock
 configuration because `unsAdditionalInformation` is not declared on the PHPUnit mock. The full
-suite therefore reports 130 tests, 282 assertions, and those four known test-harness errors; no
+suite therefore reports 132 tests, 291 assertions, and those four known test-harness errors; no
 additional failures are present.
 
 Run the full unit suite:
