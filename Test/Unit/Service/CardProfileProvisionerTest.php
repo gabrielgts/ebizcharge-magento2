@@ -39,7 +39,18 @@ class CardProfileProvisionerTest extends TestCase
             'CardNumber' => '4111111111111111',
             'CardExpiration' => '1230',
             'CardCode' => '123',
-        ], $profileRequest['paymentMethodProfile']);
+        ], array_diff_key(
+            $profileRequest['paymentMethodProfile'],
+            array_flip(['Created', 'Modified'])
+        ));
+        $this->assertMatchesRegularExpression(
+            '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/',
+            $profileRequest['paymentMethodProfile']['Created']
+        );
+        $this->assertSame(
+            $profileRequest['paymentMethodProfile']['Created'],
+            $profileRequest['paymentMethodProfile']['Modified']
+        );
     }
 
     public function testIncompleteMetadataUsesSharedCustomerIdentityManager(): void

@@ -40,6 +40,13 @@ class CardProfileProvisioner
             'CardExpiration' => (string) ($cardData['CardExpiration'] ?? ''),
             'CardCode' => (string) ($cardData['CardCode'] ?? ''),
         ];
+        // PHP's WSDL encoder requires both dateTime properties declared before the card fields.
+        // EBizCharge's PHP example populates them even though the field table labels them optional.
+        $timestamp = gmdate('Y-m-d\TH:i:s');
+        $profile += [
+            'Created' => $timestamp,
+            'Modified' => $timestamp,
+        ];
         foreach (['AccountHolderName', 'AvsZip', 'CardExpiration', 'CardNumber'] as $required) {
             if (trim((string) ($profile[$required] ?? '')) === '') {
                 throw new \RuntimeException('Vault payment profile is incomplete.');

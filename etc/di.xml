@@ -21,17 +21,24 @@
                 <item name="gtstudio_ebizcharge_subscription_listing_data_source"
                       xsi:type="string">Gtstudio\Ebizcharge\Model\ResourceModel\Subscription\Grid\Collection</item>
                 <item name="gtstudio_ebizcharge_debug_trace_listing_data_source"
-                      xsi:type="string">Gtstudio\Ebizcharge\Model\ResourceModel\DebugTrace\Collection</item>
+                      xsi:type="string">Gtstudio\Ebizcharge\Model\ResourceModel\DebugTrace\Grid\Collection</item>
             </argument>
         </arguments>
     </type>
 
-    <!-- Wrap the resource collection with the SearchResultInterface signature the listing needs -->
+    <!-- Magento's generic UI DataProvider requires SearchResultInterface, not domain collections. -->
     <virtualType name="Gtstudio\Ebizcharge\Model\ResourceModel\Subscription\Grid\Collection"
-                 type="Gtstudio\Ebizcharge\Model\ResourceModel\Subscription\Collection">
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
         <arguments>
             <argument name="mainTable" xsi:type="string">gtstudio_ebizcharge_subscription</argument>
             <argument name="resourceModel" xsi:type="string">Gtstudio\Ebizcharge\Model\ResourceModel\Subscription</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Gtstudio\Ebizcharge\Model\ResourceModel\DebugTrace\Grid\Collection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">gtstudio_ebizcharge_debug_trace</argument>
+            <argument name="resourceModel" xsi:type="string">Gtstudio\Ebizcharge\Model\ResourceModel\DebugTrace</argument>
         </arguments>
     </virtualType>
 
