@@ -6,11 +6,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 
-/**
- * For capture/refund/void: forwards the original RefNum (transaction id) to EBizCharge.
- *
- * Capture references the authorization, refund/void reference the capture/auth.
- */
+/** Builds reference-based capture, refund, and void requests. */
 class RefundCaptureVoidBuilder implements BuilderInterface
 {
     public function build(array $buildSubject): array

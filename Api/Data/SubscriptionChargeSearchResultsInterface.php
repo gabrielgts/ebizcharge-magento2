@@ -4,9 +4,7 @@ namespace Gtstudio\Ebizcharge\Api\Data;
 
 use Magento\Framework\Api\SearchResultsInterface;
 
-/**
- * @api
- */
+/** @api */
 interface SubscriptionChargeSearchResultsInterface extends SearchResultsInterface
 {
     /** @return SubscriptionChargeInterface[] */

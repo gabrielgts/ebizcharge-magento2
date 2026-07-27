@@ -6,13 +6,7 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
-/**
- * Parameterized persistence for the module-owned customer identity table.
- *
- * The customer-facing identifier is intentionally not globally constrained in declarative
- * schema because an existing installation may contain duplicates. We detect and surface those
- * records without making setup:upgrade fail on legacy data.
- */
+/** Persists module-owned customer identity mappings. */
 class CustomerIdentityStorage
 {
     private const CUSTOMER_TABLE = 'customer_entity';

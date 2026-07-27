@@ -2,6 +2,8 @@
 
 namespace Gtstudio\Ebizcharge\Service;
 
+use InvalidArgumentException;
+use RuntimeException;
 use Gtstudio\Ebizcharge\Gateway\Config\Config;
 use Gtstudio\Ebizcharge\Gateway\Http\SoapMethodClient;
 use Magento\Store\Model\StoreManagerInterface;
@@ -32,7 +34,7 @@ class CardProfileDeleter
 
         $result = $response['DeleteCustomerPaymentMethodProfileResult'] ?? null;
         if (!filter_var($result, FILTER_VALIDATE_BOOLEAN)) {
-            throw new \RuntimeException('EBizCharge did not confirm payment profile deletion.');
+            throw new RuntimeException('EBizCharge did not confirm payment profile deletion.');
         }
     }
 
@@ -40,11 +42,11 @@ class CardProfileDeleter
     private function parseToken(string $gatewayToken): array
     {
         if (!str_contains($gatewayToken, ':')) {
-            throw new \InvalidArgumentException('Malformed EBizCharge gateway token.');
+            throw new InvalidArgumentException('Malformed EBizCharge gateway token.');
         }
         [$custNum, $methodId] = array_map('trim', explode(':', $gatewayToken, 2));
         if ($custNum === '' || $methodId === '') {
-            throw new \InvalidArgumentException('Malformed EBizCharge gateway token.');
+            throw new InvalidArgumentException('Malformed EBizCharge gateway token.');
         }
         return [$custNum, $methodId];
     }

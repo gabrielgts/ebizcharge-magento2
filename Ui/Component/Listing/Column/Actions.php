@@ -8,11 +8,7 @@ use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
 use Magento\Ui\Component\Listing\Columns\Column;
 
-/**
- * Inline row actions in the subscription grid.
- *
- * Available actions depend on status: paused subscriptions show "Resume" not "Pause", etc.
- */
+/** Provides status-aware subscription grid actions. */
 class Actions extends Column
 {
     public function __construct(

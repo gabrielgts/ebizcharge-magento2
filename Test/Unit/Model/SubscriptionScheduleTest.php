@@ -33,9 +33,7 @@ class SubscriptionScheduleTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider frequencyProvider
-     */
+    /** @dataProvider frequencyProvider */
     public function testComputeNextBillDate(string $frequency, string $from, string $expected): void
     {
         $next = $this->schedule->computeNextBillDate(

@@ -30,6 +30,7 @@ class VaultDataBuilderTest extends TestCase
         $this->assertFalse($result['tran']['isRecurring']);
         $this->assertSame('', $result['tran']['InventoryLocation']);
         $this->assertFalse($result['tran']['IgnoreDuplicate']);
+        $this->assertFalse($result['tran']['MerchReceipt']);
         $this->assertArrayNotHasKey('CardNumber', $result['tran']);
         $this->assertArrayNotHasKey('CardCode', $result['tran']);
         $this->assertArrayNotHasKey('CreditCardData', $result['tran']);

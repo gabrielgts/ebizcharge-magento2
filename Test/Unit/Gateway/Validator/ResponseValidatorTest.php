@@ -8,12 +8,7 @@ use Magento\Payment\Gateway\Validator\ResultInterface;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Validates the routing of EBizCharge result codes to Magento approve/decline/error states.
- *
- * This is the gate that decides whether a charge "succeeded" — getting it wrong here means
- * orders that should have failed get marked paid (or vice-versa).
- */
+/** Verifies gateway result-code routing. */
 class ResponseValidatorTest extends TestCase
 {
     private ResponseValidator $validator;
@@ -22,7 +17,11 @@ class ResponseValidatorTest extends TestCase
     {
         $resultFactory = $this->createMock(ResultInterfaceFactory::class);
         $resultFactory->method('create')->willReturnCallback(
-            fn (array $args) => new Result((bool) $args['isValid'], (array) ($args['failsDescription'] ?? []), (array) ($args['errorCodes'] ?? []))
+            fn (array $args) => new Result(
+                (bool) $args['isValid'],
+                (array) ($args['failsDescription'] ?? []),
+                (array) ($args['errorCodes'] ?? [])
+            )
         );
         $this->validator = new ResponseValidator($resultFactory);
     }

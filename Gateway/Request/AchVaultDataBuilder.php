@@ -6,13 +6,7 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 
-/**
- * Vault flow for ACH — same shape as VaultDataBuilder (split "<custNum>:<methodId>" gateway token,
- * route to runCustomerTransaction) but for the ACH command pool.
- *
- * Kept separate so vault wiring stays explicit per method-type; one builder per concept beats
- * conditional logic.
- */
+/** Builds saved-ACH runCustomerTransaction requests. */
 class AchVaultDataBuilder implements BuilderInterface
 {
     public function build(array $buildSubject): array

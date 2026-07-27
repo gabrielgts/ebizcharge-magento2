@@ -204,8 +204,9 @@ also be validated with approved and declined cards against EBizCharge sandbox cr
 - New-card authorization and sale request paths have focused unit coverage.
 - Customer identity, response normalization, line items, Vault contracts, token deletion,
   recurring validation, and sensitive-data redaction have focused unit coverage.
-- Card Vault, ACH, subscription migration, and recurring billing are implemented but still
-  require complete end-to-end validation for the target deployment.
+- Card Vault, ACH, subscription migration, and recurring billing are implemented. The recurring
+  saved-card authorization path was sandbox-validated on 2026-07-27; the remaining recurring
+  scenarios still require complete end-to-end validation for the target deployment.
 - ACH has four known PHPUnit mock errors described above.
 - General transaction idempotency and orphan-authorization reconciliation remain follow-up work.
 - Magento Admin Vault order creation is not enabled.

@@ -8,10 +8,7 @@ use Magento\Vault\Model\Ui\TokenUiComponentInterface;
 use Magento\Vault\Model\Ui\TokenUiComponentInterfaceFactory;
 use Magento\Vault\Model\Ui\TokenUiComponentProviderInterface;
 
-/**
- * Renders one saved card in the checkout's saved-cards list. The frontend KO component
- * (gtstudio-ebizcharge-vault-method.js) reads the details to display brand + last4 + expiration.
- */
+/** Provides saved-card checkout component data. */
 class TokenUiComponentProvider implements TokenUiComponentProviderInterface
 {
     public function __construct(private readonly TokenUiComponentInterfaceFactory $componentFactory)

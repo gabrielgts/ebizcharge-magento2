@@ -14,17 +14,7 @@ use Magento\Payment\Gateway\Http\ClientInterface;
 use Magento\Payment\Gateway\Http\TransferInterface;
 use SoapFault;
 
-/**
- * Outbound SOAP client for EBizCharge Connect.
- *
- * Hardens the legacy `new \Zend\Soap\Client(...)` instantiation:
- *  - injected ClientFactory (testable, DI-managed)
- *  - TLS 1.2 minimum, peer verification on, explicit CA bundle
- *  - configurable connect/read timeouts (admin config, not ini_set)
- *  - never logs PAN/CVV (RedactionFilter on the gtstudio_ebizcharge channel handles it)
- *  - when Debug Mode is on, also captures redacted request/response into the debug-trace table
- *    so admins can inspect failed transactions without enabling shell access
- */
+/** Sends secured and redacted EBizCharge SOAP requests. */
 class SoapClient implements ClientInterface
 {
     public function __construct(
@@ -42,35 +32,13 @@ class SoapClient implements ClientInterface
         $body = $transfer->getBody();
         $method = (string) ($body['__method'] ?? 'runTransaction');
         unset($body['__method']);
-        // Request-local orchestration metadata is consumed by VaultingClient. It is never part
-        // of an EBizCharge SOAP contract and must not be serialized or persisted in debug traces.
+        // Remove request-local metadata before SOAP serialization and tracing.
         unset($body['__vault_profile']);
 
         $headers = $transfer->getHeaders();
         $storeId = isset($headers['store_id']) ? (int) $headers['store_id'] : null;
 
         $endpoint = $this->config->getEndpointUrl($storeId);
-        $options = [
-            'soap_version' => SOAP_1_1,
-            'trace' => $this->config->isDebugEnabled($storeId) ? 1 : 0,
-            'exceptions' => true,
-            'cache_wsdl' => WSDL_CACHE_BOTH,
-            'connection_timeout' => $this->config->getSoapConnectTimeout($storeId),
-            'stream_context' => stream_context_create([
-                'ssl' => [
-                    'verify_peer' => true,
-                    'verify_peer_name' => true,
-                    'allow_self_signed' => false,
-                    'crypto_method' => STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
-                        | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT,
-                ],
-                'http' => [
-                    'timeout' => $this->config->getSoapReadTimeout($storeId),
-                    'user_agent' => 'Gtstudio_Ebizcharge/1.0 Magento2',
-                ],
-            ]),
-        ];
-
         $cid = $this->correlationId->get();
         $this->logger->info('soap.request', [
             'correlation_id' => $cid,
@@ -83,6 +51,27 @@ class SoapClient implements ClientInterface
         $start = microtime(true);
 
         try {
+            $options = [
+                'soap_version' => SOAP_1_1,
+                'trace' => $this->config->isDebugEnabled($storeId) ? 1 : 0,
+                'exceptions' => true,
+                'cache_wsdl' => WSDL_CACHE_BOTH,
+                'connection_timeout' => $this->config->getSoapConnectTimeout($storeId),
+                // phpcs:ignore Magento2.Functions.DiscouragedFunction.Discouraged -- SOAP TLS context.
+                'stream_context' => stream_context_create([
+                    'ssl' => [
+                        'verify_peer' => true,
+                        'verify_peer_name' => true,
+                        'allow_self_signed' => false,
+                        'crypto_method' => STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
+                            | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT,
+                    ],
+                    'http' => [
+                        'timeout' => $this->config->getSoapReadTimeout($storeId),
+                        'user_agent' => 'Gtstudio_Ebizcharge/1.0 Magento2',
+                    ],
+                ]),
+            ];
             $client = $this->clientFactory->create($endpoint, $options);
             $response = $client->__soapCall($method, [$body]);
         } catch (SoapFault $e) {
@@ -94,8 +83,7 @@ class SoapClient implements ClientInterface
                 'fault_string' => $e->getMessage(),
                 'latency_ms' => $latency,
             ]);
-            // Fault text is retained in the redaction-processed log, but never copied verbatim
-            // into database-backed traces where a remote endpoint could echo submitted data.
+            // Keep remote fault text out of database-backed traces.
             $this->captureTrace($cid, $method, $endpoint, $command, $body, [], $latency, 'SOAP fault', $storeId);
             throw new SoapFaultException(
                 (string) ($e->faultcode ?? ''),
@@ -154,6 +142,15 @@ class SoapClient implements ClientInterface
         if (!$this->debugTraceRecorder->isEnabled($storeId)) {
             return;
         }
-        $this->debugTraceRecorder->record($cid, $method, $endpoint, $command, $request, $response, $latency, $errorMessage);
+        $this->debugTraceRecorder->record(
+            $cid,
+            $method,
+            $endpoint,
+            $command,
+            $request,
+            $response,
+            $latency,
+            $errorMessage
+        );
     }
 }

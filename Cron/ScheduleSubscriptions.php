@@ -13,13 +13,7 @@ use Gtstudio\Ebizcharge\Model\ResourceModel\SubscriptionCharge\CollectionFactory
 use Gtstudio\Ebizcharge\Model\SubscriptionChargeFactory;
 use Gtstudio\Ebizcharge\Service\CorrelationIdProvider;
 
-/**
- * Hourly cron — finds active subscriptions due today (or earlier) and inserts pending charge rows.
- *
- * Cheap: no SOAP calls, just DB writes. The UNIQUE INDEX on
- * (subscription_id, scheduled_for, attempt_count) makes this safe to re-run. scheduled_for is
- * the stable billing-cycle date, not the current cron timestamp.
- */
+/** Queues due subscription billing cycles. */
 class ScheduleSubscriptions
 {
     public function __construct(
@@ -75,10 +69,7 @@ class ScheduleSubscriptions
         ]);
     }
 
-    /**
-     * Returns the next immutable attempt number, or null when work for this subscription is
-     * already pending/in progress or this billing cycle already succeeded.
-     */
+    /** Returns the next attempt number when the cycle is eligible. */
     private function getNextAttempt(int $subscriptionId, string $scheduledFor): ?int
     {
         /** @var ChargeCollection $openCharges */

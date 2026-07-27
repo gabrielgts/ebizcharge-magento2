@@ -18,7 +18,7 @@ class VaultWiringTest extends TestCase
             'GtstudioEbizchargeVaultValueHandlerPool',
             $this->argument($xml, 'virtualType', 'GtstudioEbizchargeVaultFacade', 'valueHandlerPool')
         );
-        $provider = $xml->xpath(
+        $provider = $this->frontendDi()->xpath(
             '//type[@name="Magento\Vault\Model\Ui\TokensConfigProvider"]'
             . '/arguments/argument[@name="tokenUiComponentProviders"]'
             . '/item[@name="gtstudio_ebizcharge"]'
@@ -27,6 +27,17 @@ class VaultWiringTest extends TestCase
         $this->assertSame(
             'Gtstudio\Ebizcharge\Model\Vault\TokenUiComponentProvider',
             trim((string) $provider[0])
+        );
+
+        $achProvider = $this->frontendDi()->xpath(
+            '//type[@name="Magento\Vault\Model\Ui\TokensConfigProvider"]'
+            . '/arguments/argument[@name="tokenUiComponentProviders"]'
+            . '/item[@name="gtstudio_ebizcharge_ach"]'
+        );
+        $this->assertNotEmpty($achProvider);
+        $this->assertSame(
+            'Gtstudio\Ebizcharge\Model\Vault\AchTokenUiComponentProvider',
+            trim((string) $achProvider[0])
         );
     }
 
@@ -95,6 +106,18 @@ class VaultWiringTest extends TestCase
         $this->assertInstanceOf(\SimpleXMLElement::class, $layout);
         $blocks = $layout->xpath('//block[@class="Gtstudio\Ebizcharge\Block\Customer\CardRenderer"]');
         $this->assertNotEmpty($blocks);
+        $this->assertSame(
+            'Gtstudio_Ebizcharge::customer/credit_card.phtml',
+            (string) $blocks[0]['template']
+        );
+
+        $template = (string) file_get_contents(
+            $module . '/view/frontend/templates/customer/credit_card.phtml'
+        );
+        $this->assertStringContainsString("getUrl('vault/cards/deleteaction')", $template);
+        $this->assertStringContainsString('usesDescriptionColumn()', $template);
+        $this->assertStringContainsString('colspan="2"', $template);
+        $this->assertStringContainsString('gtstudio-ebizcharge-description-actions', $template);
 
         $plugins = $this->di()->xpath(
             '//type[@name="Magento\Vault\Model\PaymentTokenRepository"]'
@@ -106,6 +129,13 @@ class VaultWiringTest extends TestCase
     private function di(): \SimpleXMLElement
     {
         $xml = simplexml_load_file(dirname(__DIR__, 3) . '/etc/di.xml');
+        $this->assertInstanceOf(\SimpleXMLElement::class, $xml);
+        return $xml;
+    }
+
+    private function frontendDi(): \SimpleXMLElement
+    {
+        $xml = simplexml_load_file(dirname(__DIR__, 3) . '/etc/frontend/di.xml');
         $this->assertInstanceOf(\SimpleXMLElement::class, $xml);
         return $xml;
     }

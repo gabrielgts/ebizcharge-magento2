@@ -5,9 +5,7 @@ namespace Gtstudio\Ebizcharge\Gateway\Response;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Response\HandlerInterface;
 
-/**
- * Closes the payment transaction (used by void/refund commands).
- */
+/** Closes payment transactions for void and refund commands. */
 class CloseTransactionHandler implements HandlerInterface
 {
     public function __construct(private readonly bool $shouldCloseParent = true)

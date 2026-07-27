@@ -55,8 +55,7 @@ class PaymentDetailsHandler implements HandlerInterface
         try {
             $this->identityManager->recordCustomerNumber($customerId, $customerNumber);
         } catch (\Throwable $e) {
-            // The gateway transaction has already completed. Mapping persistence is an audit
-            // concern and must not reverse or fail an approved authorization.
+            // Mapping persistence must not fail an approved gateway transaction.
             $this->logger->warning('customer_identity.response_persist_failed', [
                 'correlation_id' => $this->correlationId->get(),
                 'magento_customer_id' => $customerId,

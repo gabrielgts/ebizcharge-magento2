@@ -2,6 +2,7 @@
 
 namespace Gtstudio\Ebizcharge\Service;
 
+use RuntimeException;
 use Gtstudio\Ebizcharge\Gateway\Http\SoapMethodClient;
 
 /** Provisions the EBizCharge customer and card profile after an approved PAN transaction. */
@@ -13,12 +14,7 @@ class CardProfileProvisioner
     ) {
     }
 
-    /**
-     * @param array<string,mixed> $transactionRequest
-     * @param array<string,mixed> $metadata
-     * @param array<string,mixed> $headers
-     * @return array{cust_num:string,method_id:string}
-     */
+    /** Provisions an EBizCharge card profile. */
     public function provision(array $transactionRequest, array $metadata, array $headers = []): array
     {
         $securityToken = $transactionRequest['securityToken'] ?? null;
@@ -27,12 +23,12 @@ class CardProfileProvisioner
         $cardData = $transactionRequest['tran']['CreditCardData'] ?? null;
 
         if (!is_array($securityToken) || !is_array($customer) || !is_array($profile) || !is_array($cardData)) {
-            throw new \RuntimeException('Vault profile request is incomplete.');
+            throw new RuntimeException('Vault profile request is incomplete.');
         }
 
         $customerId = trim((string) ($customer['CustomerId'] ?? ''));
         if ($customerId === '') {
-            throw new \RuntimeException('Vault customer identifier is missing.');
+            throw new RuntimeException('Vault customer identifier is missing.');
         }
 
         $profile += [
@@ -40,8 +36,7 @@ class CardProfileProvisioner
             'CardExpiration' => (string) ($cardData['CardExpiration'] ?? ''),
             'CardCode' => (string) ($cardData['CardCode'] ?? ''),
         ];
-        // PHP's WSDL encoder requires both dateTime properties declared before the card fields.
-        // EBizCharge's PHP example populates them even though the field table labels them optional.
+        // Populate WSDL date fields required by PHP's SOAP encoder.
         $timestamp = gmdate('Y-m-d\TH:i:s');
         $profile += [
             'Created' => $timestamp,
@@ -49,11 +44,10 @@ class CardProfileProvisioner
         ];
         foreach (['AccountHolderName', 'AvsZip', 'CardExpiration', 'CardNumber'] as $required) {
             if (trim((string) ($profile[$required] ?? '')) === '') {
-                throw new \RuntimeException('Vault payment profile is incomplete.');
+                throw new RuntimeException('Vault payment profile is incomplete.');
             }
         }
-        // EBizCharge asks integrations to omit optional fields rather than serialize empty values.
-        // CVV is request-local and may legitimately be absent for flows where Magento does not collect it.
+        // Omit optional empty fields, including request-local CVV when unavailable.
         $profile = array_filter(
             $profile,
             static fn (mixed $value): bool => $value !== '' && $value !== null
@@ -64,7 +58,7 @@ class CardProfileProvisioner
         if ($internalId === '' || $custNum === '') {
             $magentoCustomerId = (int) ($metadata['magento_customer_id'] ?? 0);
             if ($magentoCustomerId <= 0) {
-                throw new \RuntimeException('Magento Vault customer identifier is missing.');
+                throw new RuntimeException('Magento Vault customer identifier is missing.');
             }
             $identity = $this->identityManager->sync(
                 $magentoCustomerId,
@@ -92,6 +86,6 @@ class CardProfileProvisioner
         if (is_scalar($value) && trim((string) $value) !== '') {
             return trim((string) $value);
         }
-        throw new \RuntimeException('EBizCharge profile response is malformed.');
+        throw new RuntimeException('EBizCharge profile response is malformed.');
     }
 }

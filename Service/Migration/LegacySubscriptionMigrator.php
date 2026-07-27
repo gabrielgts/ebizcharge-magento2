@@ -12,24 +12,7 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Vault\Api\PaymentTokenManagementInterface;
 
-/**
- * Migrates rows from the legacy `ebizcharge_recurring_dates` and `ebizcharge_recurring_order`
- * tables into the new `gtstudio_ebizcharge_subscription` schema.
- *
- * Mapping:
- *   ebizcharge_recurring_dates.recurring_id    → grouping key
- *   ebizcharge_recurring_dates.recurring_date  → first row drives next_bill_date
- *   ebizcharge_recurring_order.rec_order_id    → links source order
- *   ebizcharge_recurring_order.created_date    → start_date / created_at
- *   ebizcharge_recurring_order.status          → maps to new status taxonomy
- *
- * Resolves vault token by looking up the customer's already-migrated tokens (Phase 3 vault
- * migration must run first). If no token is found, the legacy subscription is skipped — the
- * customer will be re-prompted at next charge attempt or on resume.
- *
- * Both dry-run (default) and execute modes are supported. Idempotent against re-runs via the
- * `(customer_id, source_order_id, frequency)` natural key check.
- */
+/** Migrates legacy recurring records into module subscriptions. */
 class LegacySubscriptionMigrator
 {
     public const SKIP_NO_LEGACY_TABLE = 'no_legacy_table';
@@ -57,15 +40,7 @@ class LegacySubscriptionMigrator
     ) {
     }
 
-    /**
-     * @return array{
-     *   processed:int,
-     *   migrated:int,
-     *   skipped:array<string,int>,
-     *   failed:int,
-     *   errors:array<int,string>
-     * }
-     */
+    /** @return array{processed:int,migrated:int,skipped:array<string,int>,failed:int,errors:array<int,string>} */
     public function migrate(bool $dryRun = true): array
     {
         $stats = [
@@ -132,11 +107,7 @@ class LegacySubscriptionMigrator
         return $stats;
     }
 
-    /**
-     * Reads from the two legacy tables. Tolerates either being absent.
-     *
-     * @return array<int,array<string,mixed>>|null
-     */
+    /** @return array<int,array<string,mixed>>|null */
     private function fetchLegacyRows(): ?array
     {
         $connection = $this->resource->getConnection();
@@ -147,9 +118,7 @@ class LegacySubscriptionMigrator
             return null;
         }
 
-        // Aggregate the legacy data — recurring_id groups dates; the latest active row per
-        // recurring_id is what we map. Field names follow the legacy module's schema, with
-        // fallbacks for variations seen in customizations.
+        // Map the latest active row per legacy recurring ID.
         $select = $connection->select()
             ->from(['d' => $datesTable], [
                 'recurring_id' => 'd.recurring_id',
@@ -219,10 +188,7 @@ class LegacySubscriptionMigrator
         return $connection->fetchOne($select) !== false;
     }
 
-    /**
-     * Pick the customer's first visible-active vault token migrated by Phase 3, preferring the
-     * cards method over ACH (mirrors how the legacy module behaved).
-     */
+    /** Returns the customer's preferred active migrated Vault token. */
     private function resolveDefaultVaultToken(int $customerId): ?int
     {
         try {

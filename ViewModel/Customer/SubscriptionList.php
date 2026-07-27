@@ -12,12 +12,7 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Magento\Vault\Api\PaymentTokenManagementInterface;
 
-/**
- * Powers the My Account → Subscriptions list page.
- *
- * Pulls subscriptions for the logged-in customer and a flat list of payment-method choices for
- * the "update payment method" inline form.
- */
+/** Provides customer subscriptions and payment-method choices. */
 class SubscriptionList implements ArgumentInterface
 {
     private const COLORS = [

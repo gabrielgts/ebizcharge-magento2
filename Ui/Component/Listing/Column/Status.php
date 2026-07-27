@@ -3,16 +3,12 @@
 namespace Gtstudio\Ebizcharge\Ui\Component\Listing\Column;
 
 use Gtstudio\Ebizcharge\Api\Data\SubscriptionInterface;
+use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
 use Magento\Ui\Component\Listing\Columns\Column;
 
-/**
- * Renders the status as a colored pill so the grid surfaces failing subscriptions visually.
- *
- * Uses Magento_Ui's built-in `data-grid-cellLabel` styles via inline color hints; admins skim
- * for red/green and only filter for details.
- */
+/** Renders subscription status in the admin grid. */
 class Status extends Column
 {
     private const COLORS = [
@@ -27,6 +23,7 @@ class Status extends Column
     public function __construct(
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
+        private readonly Escaper $escaper,
         array $components = [],
         array $data = []
     ) {
@@ -45,9 +42,10 @@ class Status extends Column
             $color = self::COLORS[$status] ?? '#666';
             $label = ucfirst($status);
             $row[$field] = sprintf(
-                '<span style="display:inline-block;padding:2px 10px;border-radius:10px;background:%s;color:#fff;font-weight:600;font-size:11px;">%s</span>',
-                htmlspecialchars($color, ENT_QUOTES),
-                htmlspecialchars($label, ENT_QUOTES)
+                '<span style="display:inline-block;padding:2px 10px;border-radius:10px;'
+                . 'background:%s;color:#fff;font-weight:600;font-size:11px;">%s</span>',
+                $this->escaper->escapeHtmlAttr($color),
+                $this->escaper->escapeHtml($label)
             );
         }
         unset($row);

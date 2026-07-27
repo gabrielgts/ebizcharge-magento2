@@ -5,13 +5,7 @@ namespace Gtstudio\Ebizcharge\Cron;
 use Gtstudio\Ebizcharge\Logger\Logger;
 use Magento\Framework\App\ResourceConnection;
 
-/**
- * Daily — deletes debug-trace rows older than the retention window (7 days, hard-coded for now;
- * make admin-configurable when there's a use case).
- *
- * Trace data can grow fast under heavy traffic; without pruning we'd have a slow-burn
- * problem identical to the legacy module's unbounded `econnect.log` growth.
- */
+/** Deletes expired debug traces. */
 class PruneDebugTraces
 {
     private const RETENTION_DAYS = 7;

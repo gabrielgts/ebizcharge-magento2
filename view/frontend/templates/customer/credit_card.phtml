@@ -1,0 +1,68 @@
+<?php
+declare(strict_types=1);
+
+use Gtstudio\Ebizcharge\Block\Customer\CardRenderer;
+use Magento\Vault\Api\Data\PaymentTokenInterface;
+
+/** @var CardRenderer $block */
+$token = $block->getToken();
+if (!$token instanceof PaymentTokenInterface) {
+    return;
+}
+
+$lastFour = $block->getNumberLast4Digits();
+$deleteWidgetConfig = [
+    'Magento_Vault/js/customer_account/deleteWidget' => [
+        'type' => 'popup',
+        'modalClass' => 'my-credit-cards-popup',
+        'toggleEvent' => 'click',
+        'title' => (string) __('Delete'),
+        'content' => (string) $block->getDeleteConfirmationMessage($token),
+    ],
+];
+$renderDeleteForm = static function () use ($block, $token, $deleteWidgetConfig): void {
+    ?>
+    <form class="form gtstudio-ebizcharge-delete-card"
+          action="<?= $block->escapeUrl($block->getUrl('vault/cards/deleteaction')) ?>"
+          method="post">
+        <?= $block->getBlockHtml('formkey') ?>
+        <input name="<?= $block->escapeHtmlAttr(PaymentTokenInterface::PUBLIC_HASH) ?>"
+               value="<?= $block->escapeHtmlAttr((string) $token->getPublicHash()) ?>"
+               type="hidden">
+        <button type="submit"
+                class="action delete"
+                data-mage-init="<?= $block->escapeHtmlAttr(
+                    (string) json_encode($deleteWidgetConfig, JSON_UNESCAPED_SLASHES)
+                ) ?>">
+            <span><?= $block->escapeHtml(__('Delete')) ?></span>
+        </button>
+    </form>
+    <?php
+};
+?>
+<tr class="gtstudio-ebizcharge-card-row">
+    <td data-th="<?= $block->escapeHtmlAttr(__('Card Number')) ?>" class="col card-number">
+        <span><?= $block->escapeHtml(__('ending')) ?></span> <?= $block->escapeHtml($lastFour) ?>
+    </td>
+    <td data-th="<?= $block->escapeHtmlAttr(__('Expiration Date')) ?>" class="col card-expire">
+        <?= $block->escapeHtml($block->getExpDate()) ?>
+    </td>
+    <td data-th="<?= $block->escapeHtmlAttr(__('Type')) ?>" class="col card-type">
+        <img src="<?= $block->escapeUrl($block->getIconUrl()) ?>"
+             width="<?= $block->escapeHtmlAttr((string) $block->getIconWidth()) ?>"
+             height="<?= $block->escapeHtmlAttr((string) $block->getIconHeight()) ?>"
+             alt="<?= $block->escapeHtmlAttr(__('Card type')) ?>">
+    </td>
+    <?php if ($block->usesDescriptionColumn()): ?>
+        <td data-th="<?= $block->escapeHtmlAttr(__('Description')) ?>"
+            class="col card-description gtstudio-ebizcharge-description-actions"
+            colspan="2">
+            <span><?= $block->escapeHtml($block->getDescription($token)) ?></span>
+            <?php $renderDeleteForm(); ?>
+        </td>
+    <?php else: ?>
+        <td data-th="<?= $block->escapeHtmlAttr(__('Actions')) ?>" class="col actions">
+            <?php $renderDeleteForm(); ?>
+        </td>
+    <?php endif; ?>
+</tr>

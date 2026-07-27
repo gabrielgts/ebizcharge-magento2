@@ -2,6 +2,7 @@
 
 namespace Gtstudio\Ebizcharge\Service\Migration;
 
+use RuntimeException;
 use Gtstudio\Ebizcharge\Gateway\Config\Config;
 use Gtstudio\Ebizcharge\Logger\Logger;
 use Gtstudio\Ebizcharge\Service\CustomerIdentityManager;
@@ -12,18 +13,7 @@ use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
 use Magento\Vault\Api\PaymentTokenManagementInterface;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 
-/**
- * Migrates rows from the legacy `ebizcharge_token` table (mage_cust_id ↔ ebzc_cust_id) to
- * Magento_Vault's `vault_payment_token` table — one vault token per saved EBizCharge payment method.
- *
- * For each legacy row:
- *  1. Calls EBizCharge `getCustomerPaymentMethods` to fetch every saved method.
- *  2. Creates one `vault_payment_token` per credit-card method, with gateway_token = "<custNum>:<methodId>".
- *  3. Skips ACH methods (Phase 4 will handle those separately).
- *  4. Deduplicates against any token already migrated (by gateway_token + customer_id).
- *
- * Both dry-run and execute modes are supported. Dry-run reads only; execute writes.
- */
+/** Migrates legacy EBizCharge tokens into Magento Vault. */
 class LegacyTokenMigrator
 {
     public const SKIP_NO_LEGACY_TABLE = 'no_legacy_table';
@@ -43,11 +33,7 @@ class LegacyTokenMigrator
     ) {
     }
 
-    /**
-     * @return array{
-     *   processed:int,migrated:int,skipped:array<string,int>,failed:int,errors:array<int,string>
-     * }
-     */
+    /** @return array{processed:int,migrated:int,skipped:array<string,int>,failed:int,errors:array<int,string>} */
     public function migrate(bool $dryRun = true): array
     {
         $stats = [
@@ -185,6 +171,7 @@ class LegacyTokenMigrator
                 'exceptions' => true,
                 'cache_wsdl' => WSDL_CACHE_BOTH,
                 'connection_timeout' => $this->config->getSoapConnectTimeout(),
+                // phpcs:ignore Magento2.Functions.DiscouragedFunction.Discouraged -- SOAP TLS context.
                 'stream_context' => stream_context_create([
                     'ssl' => [
                         'verify_peer' => true,
@@ -209,8 +196,7 @@ class LegacyTokenMigrator
             'Password' => $this->config->getPassword(),
         ];
 
-        // Args must be wrapped one level deeper: ext-soap consumes __soapCall args positionally
-        // and ignores their keys. ebizcharge_token.ebzc_cust_id is the customerToken.
+        // Wrap the customer token as ext-soap's first positional argument.
         $response = $client->__soapCall('GetCustomerPaymentMethodProfiles', [[
             'securityToken' => $token,
             'customerToken' => $ebzcCustomerId,
@@ -268,7 +254,7 @@ class LegacyTokenMigrator
     {
         $expiration = $this->parseExpiration((string) ($method['CardExpiration'] ?? ''));
         if ($expiration === null) {
-            throw new \RuntimeException('Card expiration could not be parsed.');
+            throw new RuntimeException('Card expiration could not be parsed.');
         }
 
         $details = [

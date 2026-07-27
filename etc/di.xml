@@ -6,8 +6,8 @@
     <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionInterface" type="Gtstudio\Ebizcharge\Model\Subscription"/>
     <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionItemInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionItem"/>
     <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionChargeInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionCharge"/>
-    <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
-    <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionChargeSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionSearchResultsInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionSearchResults"/>
+    <preference for="Gtstudio\Ebizcharge\Api\Data\SubscriptionChargeSearchResultsInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionChargeSearchResults"/>
     <preference for="Gtstudio\Ebizcharge\Api\SubscriptionRepositoryInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionRepository"/>
     <preference for="Gtstudio\Ebizcharge\Api\SubscriptionChargeRepositoryInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionChargeRepository"/>
     <preference for="Gtstudio\Ebizcharge\Api\SubscriptionScheduleInterface" type="Gtstudio\Ebizcharge\Model\SubscriptionSchedule"/>
@@ -410,15 +410,6 @@
         </arguments>
     </virtualType>
 
-    <!-- TokenUiComponentProvider — hooks our cards into the standard saved-cards UI -->
-    <type name="Magento\Vault\Model\Ui\TokensConfigProvider">
-        <arguments>
-            <argument name="tokenUiComponentProviders" xsi:type="array">
-                <item name="gtstudio_ebizcharge" xsi:type="object">Gtstudio\Ebizcharge\Model\Vault\TokenUiComponentProvider</item>
-            </argument>
-        </arguments>
-    </type>
-
     <!-- ===================== ACH PAYMENT METHOD ===================== -->
     <virtualType name="GtstudioEbizchargeAchFacade" type="Magento\Payment\Model\Method\Adapter">
         <arguments>
@@ -586,15 +577,6 @@
             <argument name="code" xsi:type="string">gtstudio_ebizcharge_ach_vault</argument>
         </arguments>
     </virtualType>
-
-    <!-- Register ACH TokenUiComponentProvider — saved bank accounts appear in checkout -->
-    <type name="Magento\Vault\Model\Ui\TokensConfigProvider">
-        <arguments>
-            <argument name="tokenUiComponentProviders" xsi:type="array">
-                <item name="gtstudio_ebizcharge_ach" xsi:type="object">Gtstudio\Ebizcharge\Model\Vault\AchTokenUiComponentProvider</item>
-            </argument>
-        </arguments>
-    </type>
 
     <type name="Magento\Vault\Model\PaymentTokenRepository">
         <plugin name="gtstudio_ebizcharge_delete_remote_card_profile"

@@ -16,21 +16,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\OrderRepositoryInterface;
 
-/**
- * Charges one pending subscription_charge row.
- *
- * Lock semantics:
- *  - Wraps the row update in a DB transaction
- *  - Atomically flips pending -> in_progress so only one worker can grab a charge
- *  - attempt_count identifies immutable attempt rows; it is never changed during locking
- *  - The UNIQUE INDEX on (subscription_id, scheduled_for, attempt_count) protects each cycle
- *
- * Failure policy:
- *  - On gateway decline/error: status -> failed, increment subscription.failure_count
- *  - At 3 consecutive failures (admin-configurable, default 3): subscription -> failing
- *  - At 5 consecutive failures (admin-configurable, default 5): subscription -> cancelled
- *  - A distinct retry row is queued for the next charge-cron tick until cancellation threshold.
- */
+/** Processes one pending subscription charge. */
 class SubscriptionChargeEngine implements SubscriptionChargeEngineInterface
 {
     public function __construct(
@@ -106,14 +92,17 @@ class SubscriptionChargeEngine implements SubscriptionChargeEngineInterface
             $orderId = $this->orderBuilder->placeOrder($subscription, $charge->getCorrelationId());
             $this->onSuccess($charge, $subscription, $orderId);
             return true;
-        } catch (\Throwable $e) {
-            $this->onFailure($charge, $subscription, $e);
+        } catch (\Throwable $exception) {
+            $this->onFailure($charge, $subscription, $exception);
             return false;
         }
     }
 
-    private function onSuccess(SubscriptionChargeInterface $charge, SubscriptionInterface $subscription, int $orderId): void
-    {
+    private function onSuccess(
+        SubscriptionChargeInterface $charge,
+        SubscriptionInterface $subscription,
+        int $orderId
+    ): void {
         $charge->setStatus(SubscriptionChargeInterface::STATUS_SUCCEEDED);
         $charge->setMagentoOrderId($orderId);
         try {
@@ -122,11 +111,11 @@ class SubscriptionChargeEngine implements SubscriptionChargeEngineInterface
             if ($refNum !== '') {
                 $charge->setGatewayRefNum($refNum);
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             $this->logger->warning('subscription.charge.reference_lookup_failed', [
                 'charge_id' => $charge->getEntityId(),
                 'order_id' => $orderId,
-                'reason' => $e::class,
+                'reason' => $exception::class,
             ]);
         }
         $this->chargeRepository->save($charge);
@@ -141,10 +130,13 @@ class SubscriptionChargeEngine implements SubscriptionChargeEngineInterface
         ]);
     }
 
-    private function onFailure(SubscriptionChargeInterface $charge, SubscriptionInterface $subscription, \Throwable $e): void
-    {
+    private function onFailure(
+        SubscriptionChargeInterface $charge,
+        SubscriptionInterface $subscription,
+        \Throwable $exception
+    ): void {
         $charge->setStatus(SubscriptionChargeInterface::STATUS_FAILED);
-        $charge->setErrorMessage(substr($this->safeFailureMessage($e), 0, 4096));
+        $charge->setErrorMessage(substr($this->safeFailureMessage($exception), 0, 4096));
         $this->chargeRepository->save($charge);
 
         $subscription->setFailureCount($subscription->getFailureCount() + 1);
@@ -168,7 +160,7 @@ class SubscriptionChargeEngine implements SubscriptionChargeEngineInterface
             'subscription_id' => $subscription->getEntityId(),
             'failure_count' => $subscription->getFailureCount(),
             'subscription_status' => $subscription->getStatus(),
-            'error' => $e->getMessage(),
+            'error' => $exception->getMessage(),
         ]);
 
         // Customer notification — best-effort, never let a notification failure mask a charge failure

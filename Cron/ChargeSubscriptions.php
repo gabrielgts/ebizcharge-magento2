@@ -8,12 +8,7 @@ use Gtstudio\Ebizcharge\Logger\Logger;
 use Gtstudio\Ebizcharge\Model\ResourceModel\SubscriptionCharge\Collection as ChargeCollection;
 use Gtstudio\Ebizcharge\Model\ResourceModel\SubscriptionCharge\CollectionFactory as ChargeCollectionFactory;
 
-/**
- * Every 15 minutes — picks pending charges and runs them through the engine.
- *
- * Each call processes up to a configurable batch size. On a heavy day with many subscriptions,
- * subsequent ticks pick up the rest. The charge engine handles per-row locking.
- */
+/** Processes a batch of pending subscription charges. */
 class ChargeSubscriptions
 {
     private const BATCH_SIZE = 50;

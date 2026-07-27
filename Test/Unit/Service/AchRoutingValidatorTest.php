@@ -14,9 +14,7 @@ class AchRoutingValidatorTest extends TestCase
         $this->validator = new AchRoutingValidator();
     }
 
-    /**
-     * Real US bank routing numbers — these are publicly known and pass the ABA checksum.
-     */
+    /** Returns valid public routing-number fixtures. */
     public static function validRoutingProvider(): array
     {
         return [
@@ -28,9 +26,7 @@ class AchRoutingValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider validRoutingProvider
-     */
+    /** @dataProvider validRoutingProvider */
     public function testValidRoutingNumbersPass(string $routing): void
     {
         $this->assertTrue($this->validator->isValid($routing));

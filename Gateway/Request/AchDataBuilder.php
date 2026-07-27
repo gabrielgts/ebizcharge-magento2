@@ -5,17 +5,7 @@ namespace Gtstudio\Ebizcharge\Gateway\Request;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 
-/**
- * Reads ACH account/routing/type from the payment additional_information bag set by the checkout JS,
- * builds the CheckData block, and IMMEDIATELY clears those fields off additional_information so they
- * do not survive into Magento persistence.
- *
- * Routing's last 3 digits are masked with 'XXX' on the payment record (parity with the legacy module's
- * PciCompliancePayment observer). Account is reduced to last 4.
- *
- * This is symmetric to PaymentDataBuilder for credit cards. PAN/CVV-equivalent ACH data also lives
- * only in the request array we return; the SOAP client serializes once and the array is dereferenced.
- */
+/** Builds ACH data and removes raw values before persistence. */
 class AchDataBuilder implements BuilderInterface
 {
     public const KEY_ACCOUNT = 'ach_account';
@@ -38,6 +28,14 @@ class AchDataBuilder implements BuilderInterface
         $payment->unsAdditionalInformation(self::KEY_ACCOUNT);
         $payment->unsAdditionalInformation(self::KEY_ROUTING);
 
+        if ($account === '' && $routing === '') {
+            return ['tran' => []];
+        }
+
+        if ($type !== self::TYPE_CHECKING && $type !== self::TYPE_SAVINGS) {
+            $type = self::TYPE_CHECKING;
+        }
+
         if ($account !== '') {
             $payment->setAdditionalInformation('ach_last4', substr($account, -4));
         }
@@ -48,18 +46,14 @@ class AchDataBuilder implements BuilderInterface
             $payment->setAdditionalInformation(self::KEY_ACCOUNT_TYPE, $type);
         }
 
-        if ($type !== self::TYPE_CHECKING && $type !== self::TYPE_SAVINGS) {
-            $type = self::TYPE_CHECKING;
-        }
-
         return [
             'tran' => array_filter([
                 'CheckData' => array_filter([
                     'Account' => $account,
                     'Routing' => $routing,
                     'AccountType' => $type,
-                ], static fn ($v) => $v !== ''),
-            ], static fn ($v) => $v !== []),
+                ], static fn ($value) => $value !== ''),
+            ], static fn ($value) => $value !== []),
         ];
     }
 

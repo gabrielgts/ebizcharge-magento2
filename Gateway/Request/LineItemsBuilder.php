@@ -62,9 +62,7 @@ class LineItemsBuilder implements BuilderInterface
         return ['tran' => ['LineItems' => $lineItems]];
     }
 
-    /**
-     * @param string[] $getters
-     */
+    /** @param string[] $getters */
     private function firstString(object $source, array $getters): string
     {
         foreach ($getters as $getter) {
@@ -77,9 +75,7 @@ class LineItemsBuilder implements BuilderInterface
         return '';
     }
 
-    /**
-     * @param string[] $getters
-     */
+    /** @param string[] $getters */
     private function firstFloat(object $source, array $getters): float
     {
         foreach ($getters as $getter) {

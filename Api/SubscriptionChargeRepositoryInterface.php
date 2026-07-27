@@ -8,9 +8,7 @@ use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
-/**
- * @api
- */
+/** @api */
 interface SubscriptionChargeRepositoryInterface
 {
     /** @throws CouldNotSaveException */

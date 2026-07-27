@@ -11,12 +11,7 @@ use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 
-/**
- * Powers the storefront subscription detail page (charge history + items + summary).
- *
- * Reads the current subscription from registry (set by ViewController). Returns null if absent —
- * the template handles the "not found" case rather than throwing.
- */
+/** Provides storefront subscription details. */
 class SubscriptionView implements ArgumentInterface
 {
     public function __construct(

@@ -36,11 +36,7 @@ class AmountBuilder implements BuilderInterface
                     'Currency' => $order?->getCurrencyCode() ?? '',
                     'Invoice' => $this->truncateInvoice((string) ($order?->getOrderIncrementId() ?? '')),
                     'OrderID' => substr((string) ($order?->getOrderIncrementId() ?? ''), 0, 64),
-                    // TransactionDetail declares the fields below as minOccurs="1" non-nillable;
-                    // PHP's SOAP encoder rejects the request outright if any is absent. Tax and
-                    // Shipping carry real order values (as the legacy module sent them from
-                    // Model/Payment.php); the rest are the legacy defaults. Amount above is the
-                    // authoritative charged value — these are Level II reporting fields only.
+                    // Supply required Level II fields while Amount remains authoritative.
                     'Tax' => round((float) $salesOrder->getTaxAmount(), 2),
                     'Shipping' => round((float) $salesOrder->getShippingAmount(), 2),
                     'Subtotal' => 0.0,
@@ -55,9 +51,7 @@ class AmountBuilder implements BuilderInterface
         ];
     }
 
-    /**
-     * EBizCharge "Invoice" field is constrained to 10 numeric digits historically; keep last 10 numeric chars.
-     */
+    /** Normalizes the invoice number to ten digits. */
     private function truncateInvoice(string $orderIncrementId): string
     {
         $digits = preg_replace('/\D/', '', $orderIncrementId) ?? '';

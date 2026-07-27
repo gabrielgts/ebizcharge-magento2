@@ -7,10 +7,7 @@ use Magento\Vault\Model\Ui\TokenUiComponentInterface;
 use Magento\Vault\Model\Ui\TokenUiComponentInterfaceFactory;
 use Magento\Vault\Model\Ui\TokenUiComponentProviderInterface;
 
-/**
- * Renders one saved ACH bank account in the checkout's saved-methods list.
- * Symmetric to TokenUiComponentProvider (cards), but with bank-specific details.
- */
+/** Provides saved-ACH checkout component data. */
 class AchTokenUiComponentProvider implements TokenUiComponentProviderInterface
 {
     public function __construct(private readonly TokenUiComponentInterfaceFactory $componentFactory)

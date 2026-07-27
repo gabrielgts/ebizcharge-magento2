@@ -26,4 +26,21 @@
             </argument>
         </arguments>
     </type>
+
+    <!--
+        Keep token UI providers in frontend scope. Adobe Payment Services also
+        declares this array in frontend DI; registering these entries globally
+        allows the area-specific array to replace them and silently removes
+        EBizCharge saved methods from checkout.
+    -->
+    <type name="Magento\Vault\Model\Ui\TokensConfigProvider">
+        <arguments>
+            <argument name="tokenUiComponentProviders" xsi:type="array">
+                <item name="gtstudio_ebizcharge"
+                      xsi:type="object">Gtstudio\Ebizcharge\Model\Vault\TokenUiComponentProvider</item>
+                <item name="gtstudio_ebizcharge_ach"
+                      xsi:type="object">Gtstudio\Ebizcharge\Model\Vault\AchTokenUiComponentProvider</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

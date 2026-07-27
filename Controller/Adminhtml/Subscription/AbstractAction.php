@@ -11,12 +11,7 @@ use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 
-/**
- * Shared logic for single-row actions (pause/resume/cancel/charge_now/update_payment_method).
- *
- * Subclasses define {@see doAction()}. The abstract handles param parsing, ACL, error/success
- * messages, and redirect home.
- */
+/** Provides shared Admin subscription actions. */
 abstract class AbstractAction extends SubscriptionAction
 {
     public const ADMIN_RESOURCE = self::ADMIN_RESOURCE_MANAGE;

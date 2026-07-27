@@ -8,12 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * `bin/magento gtstudio:ebizcharge:vault:migrate [--dry-run]`
- *
- * Migrates legacy ebizcharge_token rows into Magento_Vault. Dry-run is the default to encourage
- * a "show me the diff first" workflow before any writes.
- */
+/** Migrates legacy tokens into Magento Vault. */
 class MigrateLegacyTokens extends Command
 {
     public function __construct(private readonly LegacyTokenMigrator $migrator)
@@ -41,11 +36,13 @@ class MigrateLegacyTokens extends Command
 
         $output->writeln('');
         $output->writeln(sprintf('Processed legacy customer rows: <comment>%d</comment>', $stats['processed']));
-        $output->writeln(sprintf('Card tokens that %s: <info>%d</info>',
+        $output->writeln(sprintf(
+            'Card tokens that %s: <info>%d</info>',
             $execute ? 'were created' : 'WOULD be created',
             $stats['migrated_cards']
         ));
-        $output->writeln(sprintf('ACH tokens that %s: <info>%d</info>',
+        $output->writeln(sprintf(
+            'ACH tokens that %s: <info>%d</info>',
             $execute ? 'were created' : 'WOULD be created',
             $stats['migrated_ach']
         ));

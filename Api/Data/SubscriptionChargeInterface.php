@@ -2,9 +2,7 @@
 
 namespace Gtstudio\Ebizcharge\Api\Data;
 
-/**
- * @api
- */
+/** @api */
 interface SubscriptionChargeInterface
 {
     public const ENTITY_ID = 'entity_id';

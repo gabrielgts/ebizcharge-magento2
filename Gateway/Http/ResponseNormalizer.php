@@ -4,14 +4,8 @@ namespace Gtstudio\Ebizcharge\Gateway\Http;
 
 use Magento\Payment\Gateway\Http\ConverterException;
 
-/**
- * Converts ext-soap responses into the flat payload expected by Magento's gateway pipeline.
- *
- * EBizCharge wraps transaction results in a method-specific property such as
- * `runTransactionResult` or `runCustomerTransactionResult`. Validators and response handlers
- * must receive the contents of that property rather than the outer SOAP response object.
- */
-final class ResponseNormalizer
+/** Normalizes wrapped EBizCharge SOAP responses. */
+class ResponseNormalizer
 {
     public function normalize(mixed $response, string $soapMethod): array
     {

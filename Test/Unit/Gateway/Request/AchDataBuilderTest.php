@@ -7,15 +7,7 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Verifies that ACH submission:
- *   1. Routes account/routing/type into the CheckData SOAP block,
- *   2. Strips raw account + routing from the payment's additional_information,
- *   3. Persists only the masked last4 + masked routing.
- *
- * This is the PCI-equivalent boundary for ACH: full account/routing must never survive into
- * Magento persistence.
- */
+/** Verifies secure ACH request construction. */
 class AchDataBuilderTest extends TestCase
 {
     private AchDataBuilder $builder;
@@ -33,10 +25,15 @@ class AchDataBuilderTest extends TestCase
             'ach_type' => 'checking',
         ]);
 
-        $payment->expects($this->once())->method('unsAdditionalInformation')->with('ach_account');
-        $payment->expects($this->exactly(1))
+        $removed = [];
+        $payment->expects($this->exactly(2))
             ->method('unsAdditionalInformation')
-            ->willReturnSelf();
+            ->willReturnCallback(
+                function (string $key) use (&$removed, $payment) {
+                    $removed[] = $key;
+                    return $payment;
+                }
+            );
 
         $additionalSet = [];
         $payment->method('setAdditionalInformation')->willReturnCallback(
@@ -53,6 +50,7 @@ class AchDataBuilderTest extends TestCase
         $this->assertSame('12345678901', $result['tran']['CheckData']['Account']);
         $this->assertSame('021000322', $result['tran']['CheckData']['Routing']);
         $this->assertSame('checking', $result['tran']['CheckData']['AccountType']);
+        $this->assertSame(['ach_account', 'ach_routing'], $removed);
 
         // Persistence: only masked values remain
         $this->assertSame('8901', $additionalSet['ach_last4'] ?? null);
@@ -97,7 +95,10 @@ class AchDataBuilderTest extends TestCase
 
     private function makePayment(array $additionalInformation): OrderPaymentInterface
     {
-        $payment = $this->createMock(OrderPaymentInterface::class);
+        $payment = $this->getMockBuilder(OrderPaymentInterface::class)
+            ->onlyMethods(get_class_methods(OrderPaymentInterface::class))
+            ->addMethods(['unsAdditionalInformation'])
+            ->getMock();
         $payment->method('getAdditionalInformation')->willReturnCallback(
             fn ($key = null) => $key === null ? $additionalInformation : ($additionalInformation[$key] ?? null)
         );

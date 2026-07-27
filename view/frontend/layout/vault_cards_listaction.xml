@@ -5,7 +5,7 @@
         <referenceBlock name="vault.cards.list">
             <block class="Gtstudio\Ebizcharge\Block\Customer\CardRenderer"
                    name="gtstudio.ebizcharge.card.renderer"
-                   template="Magento_Vault::customer_account/credit_card.phtml"/>
+                   template="Gtstudio_Ebizcharge::customer/credit_card.phtml"/>
         </referenceBlock>
     </body>
 </page>

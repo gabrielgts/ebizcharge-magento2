@@ -6,13 +6,7 @@ use Gtstudio\Ebizcharge\Service\SensitivePaymentData;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 
-/**
- * Consumes PAN/CVV from the request-local SensitivePaymentData handoff and reads non-sensitive
- * expiration fields from payment additional_information, then builds the CreditCardData block.
- *
- * PAN/CVV live only in memory and in the request array returned here; the SOAP client serializes
- * once, makes the call, and the array is dereferenced.
- */
+/** Builds request-local credit-card data. */
 class PaymentDataBuilder implements BuilderInterface
 {
     public const KEY_CC_NUMBER = 'cc_number';
@@ -61,9 +55,7 @@ class PaymentDataBuilder implements BuilderInterface
             return [];
         }
 
-        // CreditCardData declares InternalCardAuth/CardPresent as minOccurs="1" non-nillable
-        // booleans; PHP's SOAP encoder rejects the request if either is missing. Both are false
-        // here — this is a server-side card-not-present capture, same as the legacy module sent.
+        // SOAP requires both flags for server-side card-not-present requests.
         $cardData['InternalCardAuth'] = false;
         $cardData['CardPresent'] = false;
 

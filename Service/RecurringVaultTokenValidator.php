@@ -2,6 +2,8 @@
 
 namespace Gtstudio\Ebizcharge\Service;
 
+use DateTimeImmutable;
+use Throwable;
 use Gtstudio\Ebizcharge\Api\Data\SubscriptionInterface;
 use Gtstudio\Ebizcharge\Gateway\Config\Config;
 use Magento\Framework\Exception\LocalizedException;
@@ -69,11 +71,11 @@ class RecurringVaultTokenValidator
             throw new LocalizedException(__('The subscription payment method has no expiration date.'));
         }
         try {
-            $expiration = new \DateTimeImmutable($expiresAt);
-        } catch (\Throwable) {
+            $expiration = new DateTimeImmutable($expiresAt);
+        } catch (Throwable) {
             throw new LocalizedException(__('The subscription payment method expiration is invalid.'));
         }
-        if ($expiration <= new \DateTimeImmutable('now')) {
+        if ($expiration <= new DateTimeImmutable('now')) {
             throw new LocalizedException(__('The subscription payment method has expired.'));
         }
     }

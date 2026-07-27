@@ -2,30 +2,18 @@
 
 namespace Gtstudio\Ebizcharge\Block\System\Config;
 
-use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 
-/**
- * Renders the "Test Connection" button on the Credentials admin config group.
- *
- * Displays an inline result panel; the button posts the currently-entered (un-saved) credentials
- * to the AJAX controller via JS, so admins can verify before clicking Save.
- */
+/** Renders the Admin gateway connection-test control. */
 class TestConnectionButton extends Field
 {
     /** @var string */
     protected $_template = 'Gtstudio_Ebizcharge::system/config/test_connection.phtml';
 
-    public function __construct(Context $context, array $data = [])
-    {
-        parent::__construct($context, $data);
-    }
-
     protected function _getElementHtml(AbstractElement $element): string
     {
-        // Derive sibling ids from this element's own id rather than hardcoding them: the id is
-        // built from the system.xml path by Magento and has changed across versions.
+        // Derive sibling IDs from Magento's generated system-config element ID.
         $htmlId = $element->getHtmlId();
         $prefix = substr($htmlId, 0, -strlen('test_connection'));
 
@@ -42,9 +30,7 @@ class TestConnectionButton extends Field
         return $this->_toHtml();
     }
 
-    /**
-     * Required override so the field row renders without a value column.
-     */
+    /** Renders the field row without a value column. */
     public function render(AbstractElement $element): string
     {
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();

@@ -7,11 +7,7 @@ use Monolog\Level;
 use Monolog\LogRecord;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Security-critical tests. The redaction filter is the last line of defense before PAN/CVV/ACH
- * data hits the log file or any other Monolog handler. Every regression here is a potential
- * PCI incident.
- */
+/** Verifies sensitive-data redaction. */
 class RedactionFilterTest extends TestCase
 {
     private RedactionFilter $filter;
@@ -91,6 +87,36 @@ class RedactionFilterTest extends TestCase
         $body = $out->context['body'] ?? [];
         $this->assertIsArray($body);
         $this->assertStringNotContainsString('5555555555554444', json_encode($out->context));
+    }
+
+    public function testRedactsNestedGatewayCredentialsByKey(): void
+    {
+        $record = $this->record(
+            'soap.request',
+            context: [
+                'securityToken' => [
+                    'UserId' => 'merchant-user',
+                    'SecurityId' => 'merchant-security-id',
+                    'Password' => 'merchant-password',
+                ],
+            ]
+        );
+
+        $out = ($this->filter)($record);
+        $encoded = json_encode($out->context);
+
+        $this->assertIsString($encoded);
+        $this->assertStringNotContainsString('merchant-user', $encoded);
+        $this->assertStringNotContainsString('merchant-security-id', $encoded);
+        $this->assertStringNotContainsString('merchant-password', $encoded);
+        $this->assertSame(
+            [
+                'UserId' => '***REDACTED***',
+                'SecurityId' => '***REDACTED***',
+                'Password' => '***REDACTED***',
+            ],
+            $out->context['securityToken']
+        );
     }
 
     public function testNonStringValuesPassThroughUntouched(): void

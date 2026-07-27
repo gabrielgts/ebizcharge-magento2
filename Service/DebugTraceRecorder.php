@@ -7,22 +7,14 @@ use Gtstudio\Ebizcharge\Logger\Logger;
 use Gtstudio\Ebizcharge\Model\DebugTraceFactory;
 use Gtstudio\Ebizcharge\Model\ResourceModel\DebugTrace as DebugTraceResource;
 
-/**
- * Captures one SOAP request/response cycle into the debug-trace table when Debug Mode is on.
- *
- * Two layers of PCI redaction protect against accidental leakage:
- *   1. The Monolog RedactionFilter is already a processor on the gtstudio_ebizcharge channel
- *      and would redact anything we logged.
- *   2. This recorder strips PAN/CVV/account/routing keys from the JSON body before persisting
- *      so they NEVER reach the database, even if the filter somehow misses a string match.
- *
- * Persistence failures are swallowed (and logged) — debug capture must never break a payment.
- */
+/** Persists redacted SOAP request and response summaries in debug mode. */
 class DebugTraceRecorder
 {
     private const SENSITIVE_KEYS = [
         'CardNumber',
         'CardCode',
+        'CVV',
+        'CVV2',
         'cc_number',
         'cc_cid',
         'Account',
@@ -31,6 +23,7 @@ class DebugTraceRecorder
         'ach_routing',
         'Password',
         'SecurityId',
+        'UserId',
     ];
 
     public function __construct(
@@ -46,10 +39,7 @@ class DebugTraceRecorder
         return $this->config->isDebugEnabled($storeId);
     }
 
-    /**
-     * @param array<string,mixed> $request
-     * @param array<string,mixed> $response
-     */
+    /** Records one redacted gateway exchange. */
     public function record(
         string $correlationId,
         string $soapMethod,
@@ -88,7 +78,7 @@ class DebugTraceRecorder
     {
         $out = [];
         foreach ($payload as $key => $value) {
-            if (in_array((string) $key, self::SENSITIVE_KEYS, true)) {
+            if ($this->isSensitiveKey((string) $key)) {
                 $out[$key] = '***REDACTED***';
                 continue;
             }
@@ -99,6 +89,17 @@ class DebugTraceRecorder
             $out[$key] = $value;
         }
         return $out;
+    }
+
+    private function isSensitiveKey(string $key): bool
+    {
+        foreach (self::SENSITIVE_KEYS as $sensitiveKey) {
+            if (strcasecmp($key, $sensitiveKey) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** @param array<string,mixed> $payload */

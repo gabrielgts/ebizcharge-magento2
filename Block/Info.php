@@ -6,9 +6,7 @@ use Magento\Payment\Block\ConfigurableInfo;
 
 class Info extends ConfigurableInfo
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $_template = 'Gtstudio_Ebizcharge::info/info.phtml';
 
     protected function getLabel($field): \Magento\Framework\Phrase

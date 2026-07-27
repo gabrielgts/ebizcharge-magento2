@@ -16,6 +16,11 @@ use Magento\Vault\Model\Ui\VaultConfigProvider;
 /** Rejects recurring-product checkout before payment unless a reusable card can be attached. */
 class ValidateSubscriptionCheckout implements ObserverInterface
 {
+    private const SUPPORTED_PRODUCT_TYPES = [
+        ProductType::TYPE_SIMPLE,
+        ProductType::TYPE_VIRTUAL,
+    ];
+
     public function __construct(private readonly ProductRepositoryInterface $productRepository)
     {
     }
@@ -69,7 +74,7 @@ class ValidateSubscriptionCheckout implements ObserverInterface
                 continue;
             }
             $hasSubscriptionItems = true;
-            if ($product->getTypeId() !== ProductType::TYPE_SIMPLE) {
+            if (!in_array($product->getTypeId(), self::SUPPORTED_PRODUCT_TYPES, true)) {
                 throw new LocalizedException(__(
                     'Subscription product %1 uses an unsupported product type.',
                     $item->getName()

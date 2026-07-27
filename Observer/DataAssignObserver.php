@@ -10,16 +10,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Observer\AbstractDataAssignObserver;
 use Magento\Quote\Api\Data\PaymentInterface;
 
-/**
- * Forwards non-sensitive checkout fields into payment additional_information. PAN/CVV are moved
- * into a request-local in-memory handoff so quote persistence can never contain raw card data.
- *
- * The Adapter payment method (unlike the deprecated Method\Cc) does not auto-populate these,
- * so this observer is required for the new module to function.
- *
- * Also runs request-time ABA validation on the routing number — fails fast at checkout submission
- * rather than at the gateway, so the user sees a clean error message.
- */
+/** Assigns checkout data while keeping sensitive payment values request-local. */
 class DataAssignObserver extends AbstractDataAssignObserver
 {
     /** @var string[] */
@@ -77,10 +68,7 @@ class DataAssignObserver extends AbstractDataAssignObserver
         $payment->unsAdditionalInformation('cc_cid');
     }
 
-    /**
-     * @param array<string,mixed> $additional
-     * @throws LocalizedException
-     */
+    /** Validates additional payment data. */
     private function validateAch(array $additional): void
     {
         $routing = trim((string) ($additional[AchDataBuilder::KEY_ROUTING] ?? ''));

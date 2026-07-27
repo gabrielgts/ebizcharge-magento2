@@ -10,13 +10,7 @@ use Gtstudio\Ebizcharge\Service\SubscriptionEmailNotifier;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Vault\Api\PaymentTokenRepositoryInterface;
 
-/**
- * Daily — for active subscriptions whose attached vault token expires in exactly N days, send a
- * "card expiring" email (default thresholds: 30 / 7 / 1 days, admin-configurable as comma list).
- *
- * "Exactly N days" instead of a range avoids re-sending. Multi-threshold means the customer gets
- * one nudge a month out, one a week out, and one the day before — three escalating reminders.
- */
+/** Sends card-expiration reminders for active subscriptions. */
 class NotifyExpiringCards
 {
     public const CONFIG_DAYS_THRESHOLDS = 'payment/gtstudio_ebizcharge/subscription_card_expiring_email_days';

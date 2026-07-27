@@ -9,13 +9,7 @@ use Gtstudio\Ebizcharge\Model\ResourceModel\Subscription\CollectionFactory as Su
 use Gtstudio\Ebizcharge\Service\SubscriptionEmailNotifier;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 
-/**
- * Daily — finds active subscriptions whose `next_bill_date` is exactly N days away (default 3,
- * admin-configurable) and sends an "upcoming charge" email.
- *
- * "Exactly N days" is intentional — using a range would re-send the same email every day. Once
- * per cycle is the right cadence.
- */
+/** Sends upcoming-charge reminders for active subscriptions. */
 class NotifyUpcomingCharges
 {
     public const CONFIG_DAYS_AHEAD = 'payment/gtstudio_ebizcharge/subscription_upcoming_charge_email_days';

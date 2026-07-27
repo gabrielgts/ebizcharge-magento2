@@ -16,17 +16,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Item as QuoteItem;
 use Magento\Sales\Api\OrderRepositoryInterface;
 
-/**
- * Builds a Magento quote from a subscription, places it as an order through the standard
- * CartManagementInterface flow. The standard placement triggers the vault command pool we built
- * in Phase 3 — recurring charges run through the exact same code path as a manual storefront
- * vault payment, so there is one set of payment plumbing to maintain.
- *
- * Address handling:
- *  - Prefers the customer's default billing/shipping addresses
- *  - Falls back to the source order's addresses if no defaults
- *  - Throws if neither is available (we refuse to silently ship to nowhere)
- */
+/** Builds renewal orders through Magento's standard Vault payment flow. */
 class SyntheticOrderBuilder
 {
     public function __construct(
@@ -43,11 +33,7 @@ class SyntheticOrderBuilder
     ) {
     }
 
-    /**
-     * Place an order from the subscription. Returns the new order id.
-     *
-     * @throws LocalizedException
-     */
+    /** Places a renewal order and returns its ID. */
     public function placeOrder(SubscriptionInterface $subscription, string $correlationId): int
     {
         $this->correlationIdProvider->set($correlationId);
@@ -155,7 +141,9 @@ class SyntheticOrderBuilder
         }
 
         if (!$quote->getBillingAddress()->getCountryId()) {
-            throw new LocalizedException(__('No billing address available for subscription %1.', $subscription->getEntityId()));
+            throw new LocalizedException(
+                __('No billing address available for subscription %1.', $subscription->getEntityId())
+            );
         }
     }
 
@@ -212,8 +200,7 @@ class SyntheticOrderBuilder
             'method' => $methodCode,
             'additional_data' => ['public_hash' => $publicHash],
         ]);
-        // These must exist before placeOrder(): the Vault builder and SOAP client execute during
-        // placement, and the order-creation observer must recognize this as a renewal.
+        // Set renewal metadata before Vault order placement starts.
         $quote->getPayment()->setAdditionalInformation('gtstudio_recurring_charge', true);
         $quote->getPayment()->setAdditionalInformation('gtstudio_subscription_id', $subscriptionId);
         $quote->getPayment()->setAdditionalInformation('gtstudio_correlation_id', $correlationId);

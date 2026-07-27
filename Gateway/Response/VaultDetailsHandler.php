@@ -2,6 +2,7 @@
 
 namespace Gtstudio\Ebizcharge\Gateway\Response;
 
+use DateTimeImmutable;
 use Gtstudio\Ebizcharge\Gateway\Config\Config;
 use Gtstudio\Ebizcharge\Gateway\Request\AchDataBuilder;
 use Gtstudio\Ebizcharge\Logger\Logger;
@@ -13,17 +14,7 @@ use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Magento\Vault\Model\Ui\VaultConfigProvider;
 
-/**
- * Builds a Magento\Vault payment token from the EBizCharge transaction response when the customer
- * asked us to save the card or bank account.
- *
- * Token storage:
- *  - gateway_token  = "<CustNum>:<MethodID>" — both ids needed to call runCustomerTransaction
- *  - details        = JSON containing brand/account-type, last4, (cards) expiration. NEVER PAN/account
- *  - public_hash    = computed by Magento_Vault from gateway_token + customer_id
- *
- * Branches by token type: TOKEN_TYPE_CREDIT_CARD for cards, TOKEN_TYPE_ACCOUNT for ACH.
- */
+/** Builds Magento Vault tokens from approved EBizCharge responses. */
 class VaultDetailsHandler implements HandlerInterface
 {
     public function __construct(
@@ -92,8 +83,11 @@ class VaultDetailsHandler implements HandlerInterface
             || $payment->getAdditionalInformation('ach_last4') !== null;
     }
 
-    private function createCardToken(OrderPaymentInterface $payment, string $custNum, string $methodId): ?PaymentTokenInterface
-    {
+    private function createCardToken(
+        OrderPaymentInterface $payment,
+        string $custNum,
+        string $methodId
+    ): ?PaymentTokenInterface {
         $expMonth = str_pad((string) $payment->getCcExpMonth(), 2, '0', STR_PAD_LEFT);
         $expYear = (string) $payment->getCcExpYear();
         if ($expMonth === '' || $expMonth === '00' || $expYear === '') {
@@ -118,8 +112,11 @@ class VaultDetailsHandler implements HandlerInterface
         return $token;
     }
 
-    private function createAchToken(OrderPaymentInterface $payment, string $custNum, string $methodId): PaymentTokenInterface
-    {
+    private function createAchToken(
+        OrderPaymentInterface $payment,
+        string $custNum,
+        string $methodId
+    ): PaymentTokenInterface {
         $accountType = (string) $payment->getAdditionalInformation(AchDataBuilder::KEY_ACCOUNT_TYPE);
         $details = [
             'accountType' => ucfirst($accountType !== '' ? $accountType : 'checking'),
@@ -128,22 +125,19 @@ class VaultDetailsHandler implements HandlerInterface
 
         $token = $this->tokenFactory->create(PaymentTokenFactoryInterface::TOKEN_TYPE_ACCOUNT);
         $token->setGatewayToken($custNum . ':' . $methodId);
-        // ACH bank accounts have no expiration; pick a far-future sentinel so Magento_Vault doesn't
-        // expire them and so saved_payment_methods listing keeps showing them.
+        // Use a far-future expiration for non-expiring ACH accounts.
         $token->setExpiresAt(date('Y-m-d H:i:s', strtotime('+10 years')));
         $token->setTokenDetails((string) json_encode($details));
         return $token;
     }
 
-    /**
-     * Vault expects expires_at in the future; pin to last second of the expiration month.
-     */
+    /** Returns the last second of the expiration month. */
     private function endOfMonth(string $startOfMonth): string
     {
-        $dt = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $startOfMonth);
-        if ($dt === false) {
+        $expiration = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $startOfMonth);
+        if ($expiration === false) {
             return $startOfMonth;
         }
-        return $dt->modify('+1 month -1 second')->format('Y-m-d H:i:s');
+        return $expiration->modify('+1 month -1 second')->format('Y-m-d H:i:s');
     }
 }

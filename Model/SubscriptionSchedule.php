@@ -2,6 +2,7 @@
 
 namespace Gtstudio\Ebizcharge\Model;
 
+use DateTimeImmutable;
 use Gtstudio\Ebizcharge\Api\Data\SubscriptionInterface;
 use Gtstudio\Ebizcharge\Api\SubscriptionRepositoryInterface;
 use Gtstudio\Ebizcharge\Api\SubscriptionScheduleInterface;
@@ -9,11 +10,7 @@ use Magento\Framework\Exception\LocalizedException;
 
 class SubscriptionSchedule implements SubscriptionScheduleInterface
 {
-    /**
-     * Frequency → DateInterval modifier string.
-     * Mirrors the EBizCharge API exactly: disabled, daily, weekly, bi-weekly,
-     * monthly, bi-monthly, quarterly, bi-annually, annually.
-     */
+    /** Maps supported frequencies to date intervals. */
     private const FREQUENCY_INTERVALS = [
         SubscriptionInterface::FREQUENCY_DAILY => '+1 day',
         SubscriptionInterface::FREQUENCY_WEEKLY => '+1 week',
@@ -61,11 +58,10 @@ class SubscriptionSchedule implements SubscriptionScheduleInterface
     public function advanceSubscription(SubscriptionInterface $subscription): SubscriptionInterface
     {
         $frequency = $subscription->getFrequency();
-        $currentBillDate = new \DateTimeImmutable($subscription->getNextBillDate());
+        $currentBillDate = new DateTimeImmutable($subscription->getNextBillDate());
         if (isset(self::FREQUENCY_MONTHS[$frequency])) {
-            // Preserve the original billing-day anchor. Jan 31 -> Feb 28 -> Mar 31, rather than
-            // permanently drifting to the 28th or overflowing into March.
-            $anchorDay = (int) (new \DateTimeImmutable($subscription->getStartDate()))->format('j');
+            // Preserve the original billing-day anchor across short months.
+            $anchorDay = (int) (new DateTimeImmutable($subscription->getStartDate()))->format('j');
             $nextDate = $this->addMonthsClamped(
                 $currentBillDate,
                 self::FREQUENCY_MONTHS[$frequency],

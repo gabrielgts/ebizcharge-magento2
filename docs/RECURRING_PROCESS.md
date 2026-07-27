@@ -65,6 +65,19 @@ The recurring pipeline has two jobs in Magento's `default` cron group:
 | `gtstudio_ebizcharge_subscription_schedule` | Hourly | Find due `active` or `failing` subscriptions and create a pending charge row. |
 | `gtstudio_ebizcharge_subscription_charge` | Every 15 minutes | Lock and process up to 50 pending charge rows. |
 
+Magento's application crontab and the operating-system cron daemon must both be active. The module
+does not install or start the system scheduler. Verify a deployment with:
+
+```bash
+bin/magento cron:install
+crontab -l
+bin/magento cron:run --group default
+```
+
+Containerized and hosted environments must also keep their cron worker or scheduler service
+running. A configured `crontab.xml` alone does not execute renewals. Monitor `cron_schedule` for
+both job codes and alert when successful executions stop advancing.
+
 `scheduled_for` is the stable billing-cycle timestamp (`next_bill_date 00:00:00`), not the time the
 hourly cron happened to run. Each attempt is a separate immutable row. The database unique key on
 `(subscription_id, scheduled_for, attempt_count)` and an open-charge check prevent duplicate work.
@@ -164,7 +177,9 @@ For every sandbox renewal, verify:
 
 ## Known limitations requiring follow-up
 
-- Recurring card code is implemented and unit-tested but is not end-to-end sandbox certified.
+- The recurring saved-card authorization path was sandbox-validated on 2026-07-27. Sale-mode
+  renewals, retry/decline behavior, notifications, and long-running production scheduling still
+  require target-deployment validation.
 - ACH recurring charges remain disabled/unvalidated.
 - There is no gateway idempotency key. A process crash after gateway approval but before Magento
   order/charge persistence can leave an orphan approval and an `in_progress` row. Automatic stale
@@ -175,4 +190,3 @@ For every sandbox renewal, verify:
   evaluated again at renewal time. A changed or disabled product can therefore prevent renewal.
 - Retry cadence is the 15-minute charge cron and is not independently configurable.
 - `Charge Now` consumes and advances the next normal cycle.
-

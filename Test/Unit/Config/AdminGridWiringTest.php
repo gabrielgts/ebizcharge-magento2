@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Gtstudio\Ebizcharge\Test\Unit\Config;
 
+use Gtstudio\Ebizcharge\Api\Data\SubscriptionChargeSearchResultsInterface;
+use Gtstudio\Ebizcharge\Api\Data\SubscriptionSearchResultsInterface;
+use Gtstudio\Ebizcharge\Model\SubscriptionChargeSearchResults;
+use Gtstudio\Ebizcharge\Model\SubscriptionSearchResults;
 use PHPUnit\Framework\TestCase;
 
 class AdminGridWiringTest extends TestCase
@@ -49,6 +53,32 @@ class AdminGridWiringTest extends TestCase
         );
     }
 
+    public function testRepositorySearchResultPreferencesImplementTheirContracts(): void
+    {
+        $di = simplexml_load_file(dirname(__DIR__, 3) . '/etc/di.xml');
+        self::assertNotFalse($di);
+
+        $this->assertPreference(
+            $di,
+            SubscriptionSearchResultsInterface::class,
+            SubscriptionSearchResults::class
+        );
+        $this->assertPreference(
+            $di,
+            SubscriptionChargeSearchResultsInterface::class,
+            SubscriptionChargeSearchResults::class
+        );
+
+        self::assertInstanceOf(
+            SubscriptionSearchResultsInterface::class,
+            new SubscriptionSearchResults()
+        );
+        self::assertInstanceOf(
+            SubscriptionChargeSearchResultsInterface::class,
+            new SubscriptionChargeSearchResults()
+        );
+    }
+
     private function assertSearchResultVirtualType(
         \SimpleXMLElement $di,
         string $name,
@@ -65,5 +95,12 @@ class AdminGridWiringTest extends TestCase
         }
         self::assertSame($mainTable, $arguments['mainTable'] ?? null);
         self::assertSame($resourceModel, $arguments['resourceModel'] ?? null);
+    }
+
+    private function assertPreference(\SimpleXMLElement $di, string $interface, string $implementation): void
+    {
+        $matches = $di->xpath(sprintf('/config/preference[@for="%s"]', $interface));
+        self::assertCount(1, $matches);
+        self::assertSame($implementation, (string) $matches[0]['type']);
     }
 }

@@ -6,12 +6,7 @@ use Gtstudio\Ebizcharge\Gateway\Config\Config;
 use Gtstudio\Ebizcharge\Logger\Logger;
 use Magento\Framework\Webapi\Soap\ClientFactory;
 
-/**
- * Round-trips a single SOAP call (`GetMerchantIntegrationSettings`) and reports success + latency.
- *
- * Used by both the admin "Test Connection" button and the `gtstudio:ebizcharge:probe` CLI command.
- * Accepts overrides so the admin can test un-saved credentials before clicking Save.
- */
+/** Probes configured or supplied gateway credentials. */
 class ConnectionProbe
 {
     public function __construct(
@@ -21,9 +16,7 @@ class ConnectionProbe
     ) {
     }
 
-    /**
-     * @return array{success:bool, latency_ms:int, message:string}
-     */
+    /** @return array{success:bool,latency_ms:int,message:string} */
     public function probe(
         ?string $userIdOverride = null,
         ?string $securityIdOverride = null,
@@ -31,9 +24,15 @@ class ConnectionProbe
         ?string $endpointModeOverride = null,
         ?string $endpointUrlOverride = null
     ): array {
-        $userId = $userIdOverride !== null && $userIdOverride !== '' ? $userIdOverride : $this->config->getUserId();
-        $securityId = $securityIdOverride !== null && $securityIdOverride !== '' ? $securityIdOverride : $this->config->getSecurityId();
-        $password = $passwordOverride !== null && $passwordOverride !== '' ? $passwordOverride : $this->config->getPassword();
+        $userId = $userIdOverride !== null && $userIdOverride !== ''
+            ? $userIdOverride
+            : $this->config->getUserId();
+        $securityId = $securityIdOverride !== null && $securityIdOverride !== ''
+            ? $securityIdOverride
+            : $this->config->getSecurityId();
+        $password = $passwordOverride !== null && $passwordOverride !== ''
+            ? $passwordOverride
+            : $this->config->getPassword();
 
         if ($userId === '' || $securityId === '' || $password === '') {
             return [
@@ -52,6 +51,7 @@ class ConnectionProbe
                 'exceptions' => true,
                 'cache_wsdl' => WSDL_CACHE_BOTH,
                 'connection_timeout' => $this->config->getSoapConnectTimeout(),
+                // phpcs:ignore Magento2.Functions.DiscouragedFunction.Discouraged -- SOAP TLS context.
                 'stream_context' => stream_context_create([
                     'ssl' => [
                         'verify_peer' => true,
@@ -61,10 +61,7 @@ class ConnectionProbe
                     ],
                 ]),
             ]);
-            // ext-soap consumes __soapCall args positionally and ignores their keys, so the
-            // parameter struct must be the first *element* of the args array, not the args array
-            // itself. Passing it unwrapped serialises UserId/SecurityId/Password as children of
-            // the operation element, where they are undeclared, and the token is silently dropped.
+            // ext-soap requires the parameter struct as the first positional argument.
             $client->__soapCall('GetMerchantIntegrationSettings', [[
                 'securityToken' => [
                     'SecurityId' => $securityId,

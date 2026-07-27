@@ -10,14 +10,7 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 
-/**
- * Builds the runCustomerTransaction body for vault-paid orders.
- *
- * The gateway_token stored on the vault is "<CustNum>:<MethodID>". We split it back into the
- * two ids EBizCharge needs and route the call to the runCustomerTransaction SOAP method (no PAN).
- *
- * Wired into the vault command pool — replaces PaymentDataBuilder for vault payments.
- */
+/** Builds saved-card runCustomerTransaction requests. */
 class VaultDataBuilder implements BuilderInterface
 {
     public function __construct(private readonly CustomerIdentityManager $identityManager)
@@ -66,8 +59,7 @@ class VaultDataBuilder implements BuilderInterface
                 );
             }
         } catch (\Throwable) {
-            // The Vault token is sufficient for runCustomerTransaction. Local mapping health must
-            // never turn a valid saved-card payment into a different gateway command or payload.
+            // The Vault token remains authoritative when local mapping is incomplete.
             $payment->setAdditionalInformation(CustomerIdentityMetadata::STATUS, 'unverified');
         }
 
@@ -79,6 +71,8 @@ class VaultDataBuilder implements BuilderInterface
                 'isRecurring' => (bool) $payment->getAdditionalInformation('gtstudio_recurring_charge'),
                 'InventoryLocation' => '',
                 'IgnoreDuplicate' => false,
+                // EBizCharge requires MerchReceipt during SOAP serialization.
+                'MerchReceipt' => false,
             ],
         ];
     }

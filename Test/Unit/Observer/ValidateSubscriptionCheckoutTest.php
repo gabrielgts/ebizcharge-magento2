@@ -33,6 +33,24 @@ class ValidateSubscriptionCheckoutTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function testAllowsVirtualSubscriptionProduct(): void
+    {
+        $this->validator()->execute(
+            $this->observer($this->quote(true, false, ProductType::TYPE_VIRTUAL))
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testRejectsUnsupportedSubscriptionProductType(): void
+    {
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('uses an unsupported product type');
+
+        $this->validator()->execute(
+            $this->observer($this->quote(true, false, 'configurable'))
+        );
+    }
+
     public function testRenewalMarkerBypassesNewSubscriptionValidation(): void
     {
         $quote = $this->quote(false, true);
@@ -46,8 +64,11 @@ class ValidateSubscriptionCheckoutTest extends TestCase
         return new ValidateSubscriptionCheckout($this->createMock(ProductRepositoryInterface::class));
     }
 
-    private function quote(bool $saveCard, bool $renewal = false): Quote
-    {
+    private function quote(
+        bool $saveCard,
+        bool $renewal = false,
+        string $productType = ProductType::TYPE_SIMPLE
+    ): Quote {
         $payment = $this->getMockBuilder(Payment::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getMethod', 'getAdditionalInformation'])
@@ -72,7 +93,7 @@ class ValidateSubscriptionCheckoutTest extends TestCase
                 default => null,
             }
         );
-        $product->method('getTypeId')->willReturn(ProductType::TYPE_SIMPLE);
+        $product->method('getTypeId')->willReturn($productType);
 
         $item = $this->getMockBuilder(Item::class)
             ->disableOriginalConstructor()

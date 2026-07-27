@@ -7,12 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * `bin/magento gtstudio:ebizcharge:probe`
- *
- * Round-trips a no-op SOAP call against the configured endpoint and reports the result. Useful
- * during install, after credential rotation, and as a quick smoke test from a deploy script.
- */
+/** Probes the configured EBizCharge connection. */
 class Probe extends Command
 {
     public function __construct(private readonly ConnectionProbe $probe)
@@ -23,7 +18,9 @@ class Probe extends Command
     protected function configure(): void
     {
         $this->setName('gtstudio:ebizcharge:probe');
-        $this->setDescription('Round-trip the configured EBizCharge endpoint with the saved credentials. Returns latency on success or the error message on failure.');
+        $this->setDescription(
+            'Test the configured EBizCharge endpoint and report latency or failure.'
+        );
         parent::configure();
     }
 

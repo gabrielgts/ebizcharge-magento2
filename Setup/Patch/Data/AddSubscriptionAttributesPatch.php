@@ -9,13 +9,7 @@ use Magento\Eav\Setup\EavSetupFactory;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 
-/**
- * Adds two product attributes:
- *   - gtstudio_subscribable (yesno)
- *   - gtstudio_subscription_frequency (single-select; same set as the EBizCharge API frequencies)
- *
- * These let merchants flip an existing product into a subscription product without changing its type.
- */
+/** Adds product subscription attributes. */
 class AddSubscriptionAttributesPatch implements DataPatchInterface
 {
     public const ATTR_SUBSCRIBABLE = 'gtstudio_subscribable';

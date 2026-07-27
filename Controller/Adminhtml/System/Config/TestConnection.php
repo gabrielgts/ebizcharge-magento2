@@ -11,13 +11,7 @@ use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
 
-/**
- * Admin AJAX endpoint behind the "Test Connection" button.
- *
- * Reads in-progress (un-saved) credentials from the POST body. When a value comes back as the
- * Magento "encrypted-but-unchanged" placeholder (asterisks), it means the admin didn't edit
- * the field — fall back to the saved encrypted value via the ConnectionProbe's defaults.
- */
+/** Tests saved or unsaved gateway credentials from Admin configuration. */
 class TestConnection extends Action implements HttpPostActionInterface
 {
     public const ADMIN_RESOURCE = 'Gtstudio_Ebizcharge::config';
@@ -53,11 +47,7 @@ class TestConnection extends Action implements HttpPostActionInterface
         return $result->setData($outcome);
     }
 
-    /**
-     * The admin form posts back asterisks for unchanged encrypted fields. Treat that as
-     * "no override" so the probe uses the saved value. Matches the guard Magento itself uses in
-     * Config\Backend\Encrypted rather than assuming the placeholder is exactly six characters.
-     */
+    /** Returns null for Magento's unchanged encrypted-value placeholder. */
     private function resolveSecret(string $value): ?string
     {
         if ($value === '' || preg_match('/^\*+$/', $value)) {

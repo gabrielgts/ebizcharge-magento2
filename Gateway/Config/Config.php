@@ -5,12 +5,7 @@ namespace Gtstudio\Ebizcharge\Gateway\Config;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Payment\Gateway\Config\Config as PaymentConfig;
 
-/**
- * Typed accessor over scopeConfig for the gtstudio_ebizcharge payment method.
- *
- * Credentials are stored encrypted (system.xml -> backend_model="Magento\Config\Model\Config\Backend\Encrypted")
- * and decrypted on read here.
- */
+/** Provides typed EBizCharge configuration access. */
 class Config extends PaymentConfig
 {
     public const METHOD_CODE = 'gtstudio_ebizcharge';
@@ -39,12 +34,7 @@ class Config extends PaymentConfig
     public const ENDPOINT_SANDBOX = 'sandbox';
 
     public const URL_PRODUCTION = 'https://soap.ebizcharge.net/eBizService.svc?singleWsdl';
-    // Intentionally identical to production. EBizCharge does not segregate sandbox by URL — it
-    // dropped the sandbox endpoint from the integration in 2.3.2 ("Sandbox removed from admin
-    // settings") and the legacy module has hardcoded this single host ever since. Whether traffic
-    // is sandbox or live is decided by the merchant account behind the credentials, so
-    // endpoint_mode only drives the storefront test-mode banner. Endpoint URL Override remains
-    // for one-off targets (e.g. an EBizCharge-supplied dev host).
+    // Sandbox and production use the same endpoint; merchant credentials select the environment.
     public const URL_SANDBOX = 'https://soap.ebizcharge.net/eBizService.svc?singleWsdl';
 
     public function __construct(

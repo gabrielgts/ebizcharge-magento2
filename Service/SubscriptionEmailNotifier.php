@@ -14,11 +14,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 
-/**
- * Sends the three transactional emails for subscriptions: failed-charge, upcoming-charge,
- * card-expiring. All sender identity is read from the standard Magento sales-email config so
- * admins customize sender once.
- */
+/** Sends subscription lifecycle notifications. */
 class SubscriptionEmailNotifier
 {
     public const TEMPLATE_FAILED = 'gtstudio_ebizcharge_subscription_charge_failed';
@@ -86,8 +82,12 @@ class SubscriptionEmailNotifier
         );
     }
 
-    private function send(string $templateId, SubscriptionInterface $subscription, array $vars, string $eventLabel): void
-    {
+    private function send(
+        string $templateId,
+        SubscriptionInterface $subscription,
+        array $vars,
+        string $eventLabel
+    ): void {
         try {
             $customer = $this->customerRepository->getById($subscription->getCustomerId());
         } catch (\Throwable $e) {
@@ -110,10 +110,17 @@ class SubscriptionEmailNotifier
                 ])
                 ->setTemplateVars($vars)
                 ->setFromByScope(
-                    $this->scopeConfig->getValue(self::SENDER_IDENTITY_PATH, ScopeInterface::SCOPE_STORE, $storeId),
+                    $this->scopeConfig->getValue(
+                        self::SENDER_IDENTITY_PATH,
+                        ScopeInterface::SCOPE_STORE,
+                        $storeId
+                    ),
                     $storeId
                 )
-                ->addTo($customer->getEmail(), trim(($customer->getFirstname() ?? '') . ' ' . ($customer->getLastname() ?? '')))
+                ->addTo(
+                    $customer->getEmail(),
+                    trim(($customer->getFirstname() ?? '') . ' ' . ($customer->getLastname() ?? ''))
+                )
                 ->getTransport();
             $transport->sendMessage();
 

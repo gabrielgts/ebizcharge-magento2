@@ -26,8 +26,7 @@ class ConfigProvider implements ConfigProviderInterface
         $payment = [];
 
         if ($this->config->isActive($storeId)) {
-            // cvvImageUrl/months/years/availableTypes come from CcGenericConfigProvider under
-            // the shared `ccform` key (see etc/frontend/di.xml) — cc-form.js reads them there.
+            // Magento's shared ccform config provides card types, dates, and the CVV image.
             $payment[self::CODE] = [
                 'isSandbox' => $this->config->isSandbox($storeId),
                 'availableCardTypes' => $this->getCcAvailableTypes($storeId),

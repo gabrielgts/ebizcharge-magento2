@@ -22,7 +22,7 @@ class CustomerPayloadBuilder
             'Phone' => (string) ($billing?->getTelephone() ?? ''),
             'Email' => (string) ($billing?->getEmail() ?? ''),
             'BillingAddress' => $this->gatewayAddress($billing),
-        ], self::notEmpty(...));
+        ], $this->notEmpty(...));
     }
 
     /** @return array<string,mixed> */
@@ -88,7 +88,7 @@ class CustomerPayloadBuilder
         ], self::notEmpty(...));
     }
 
-    private static function notEmpty(mixed $value): bool
+    private function notEmpty(mixed $value): bool
     {
         return $value !== '' && $value !== [] && $value !== null;
     }

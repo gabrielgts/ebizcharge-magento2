@@ -6,12 +6,7 @@ use Gtstudio\Ebizcharge\Service\CorrelationIdProvider;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 
-/**
- * Stamps an idempotency key and the correlation id onto the request headers.
- *
- * Header values flow into the SoapClient and are logged with every request/response so a single
- * id joins browser -> server -> gateway -> reconciler.
- */
+/** Adds correlation and local idempotency metadata. */
 class IdempotencyHeaderBuilder implements BuilderInterface
 {
     public function __construct(

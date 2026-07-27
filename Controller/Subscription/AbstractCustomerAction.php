@@ -20,17 +20,10 @@ use Magento\Framework\Exception\AuthorizationException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
-/**
- * Shared logic for storefront subscription actions (pause/resume/cancel/update_payment_method).
- *
- * Enforces:
- *   - Login (extends AbstractAccount)
- *   - POST + FormKey (HttpPostActionInterface + isFormKeyValid)
- *   - Ownership: the subscription must belong to the logged-in customer
- *
- * Subclasses define {@see doAction()} and the success message.
- */
-abstract class AbstractCustomerAction extends AbstractAccount implements HttpPostActionInterface, CsrfAwareActionInterface
+/** Provides authenticated customer subscription actions. */
+abstract class AbstractCustomerAction extends AbstractAccount implements
+    HttpPostActionInterface,
+    CsrfAwareActionInterface
 {
     public function __construct(
         Context $context,
@@ -67,10 +60,7 @@ abstract class AbstractCustomerAction extends AbstractAccount implements HttpPos
         return $this->redirectIndex();
     }
 
-    /**
-     * @throws AuthorizationException If the subscription does not belong to the current customer.
-     * @throws NoSuchEntityException
-     */
+    /** Loads a customer-owned subscription. */
     protected function loadOwnSubscription(int $id): SubscriptionInterface
     {
         $subscription = $this->subscriptionRepository->getById($id);

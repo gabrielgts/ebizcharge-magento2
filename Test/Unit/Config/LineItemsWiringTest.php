@@ -6,9 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 class LineItemsWiringTest extends TestCase
 {
-    /**
-     * @dataProvider initialTransactionRequestProvider
-     */
+    /** @dataProvider initialTransactionRequestProvider */
     public function testInitialCardAndVaultTransactionRequestsIncludeLineItemsBuilder(string $requestName): void
     {
         $this->assertSame(
@@ -17,9 +15,7 @@ class LineItemsWiringTest extends TestCase
         );
     }
 
-    /**
-     * @return array<string,array{string}>
-     */
+    /** @return array<string,array{string}> */
     public static function initialTransactionRequestProvider(): array
     {
         return [
@@ -30,17 +26,13 @@ class LineItemsWiringTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider referenceOnlyRequestProvider
-     */
+    /** @dataProvider referenceOnlyRequestProvider */
     public function testReferenceOnlyRequestsDoNotIncludeLineItemsBuilder(string $requestName): void
     {
         $this->assertSame([], $this->builderValues($requestName, 'line_items'));
     }
 
-    /**
-     * @return array<string,array{string}>
-     */
+    /** @return array<string,array{string}> */
     public static function referenceOnlyRequestProvider(): array
     {
         return [
@@ -50,9 +42,7 @@ class LineItemsWiringTest extends TestCase
         ];
     }
 
-    /**
-     * @return string[]
-     */
+    /** @return string[] */
     private function builderValues(string $requestName, string $builderName): array
     {
         $di = simplexml_load_file(__DIR__ . '/../../../etc/di.xml');

@@ -5,14 +5,25 @@ namespace Gtstudio\Ebizcharge\Service;
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
 
-/**
- * Strips PAN, CVV, ACH account, and ACH routing numbers from any string before it reaches the formatter.
- *
- * Wired as a Monolog ProcessorInterface on the gtstudio_ebizcharge channel so individual log() callers
- * cannot bypass it. PAN and CVV must never reach disk.
- */
+/** Redacts payment data and gateway credentials from log records. */
 class RedactionFilter implements ProcessorInterface
 {
+    private const SENSITIVE_KEYS = [
+        'CardNumber',
+        'CardCode',
+        'cc_number',
+        'cc_cid',
+        'CVV',
+        'CVV2',
+        'Account',
+        'Routing',
+        'ach_account',
+        'ach_routing',
+        'Password',
+        'SecurityId',
+        'UserId',
+    ];
+
     private const PAN_PATTERN = '/\b(?:\d[ -]*?){13,19}\b/';
     private const CVV_PATTERN = '/(?<=\bcvv2?["\':=>\s]{1,5})\d{3,4}\b/i';
     private const CARDCODE_PATTERN = '/(?<=\bcardcode["\':=>\s]{1,5})\d{3,4}\b/i';
@@ -41,9 +52,9 @@ class RedactionFilter implements ProcessorInterface
 
         return (string) preg_replace_callback(
             self::PAN_PATTERN,
-            static function (array $match): string {
+            function (array $match): string {
                 $digits = preg_replace('/\D/', '', $match[0]) ?? '';
-                if ($digits === '' || !self::passesLuhn($digits)) {
+                if ($digits === '' || !$this->passesLuhn($digits)) {
                     return $match[0];
                 }
                 return substr($digits, 0, 6) . str_repeat('*', max(0, strlen($digits) - 10)) . substr($digits, -4);
@@ -56,6 +67,10 @@ class RedactionFilter implements ProcessorInterface
     {
         $result = [];
         foreach ($data as $key => $value) {
+            if ($this->isSensitiveKey((string) $key)) {
+                $result[$key] = self::REDACTION;
+                continue;
+            }
             if (is_array($value)) {
                 $result[$key] = $this->redactArray($value);
                 continue;
@@ -69,19 +84,30 @@ class RedactionFilter implements ProcessorInterface
         return $result;
     }
 
-    private static function passesLuhn(string $digits): bool
+    private function isSensitiveKey(string $key): bool
+    {
+        foreach (self::SENSITIVE_KEYS as $sensitiveKey) {
+            if (strcasecmp($key, $sensitiveKey) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function passesLuhn(string $digits): bool
     {
         $sum = 0;
         $shouldDouble = false;
         for ($i = strlen($digits) - 1; $i >= 0; $i--) {
-            $d = (int) $digits[$i];
+            $digit = (int) $digits[$i];
             if ($shouldDouble) {
-                $d *= 2;
-                if ($d > 9) {
-                    $d -= 9;
+                $digit *= 2;
+                if ($digit > 9) {
+                    $digit -= 9;
                 }
             }
-            $sum += $d;
+            $sum += $digit;
             $shouldDouble = !$shouldDouble;
         }
         return $sum > 0 && $sum % 10 === 0;

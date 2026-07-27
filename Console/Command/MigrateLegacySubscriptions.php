@@ -8,12 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * `bin/magento gtstudio:ebizcharge:subscription:migrate-legacy [--execute]`
- *
- * Mirrors the vault-migration UX: dry-run is the default; --execute commits.
- * Run the vault migration FIRST so customers have tokens to bind subscriptions to.
- */
+/** Migrates legacy subscriptions with dry-run as the default. */
 class MigrateLegacySubscriptions extends Command
 {
     public function __construct(private readonly LegacySubscriptionMigrator $migrator)
@@ -24,7 +19,9 @@ class MigrateLegacySubscriptions extends Command
     protected function configure(): void
     {
         $this->setName('gtstudio:ebizcharge:subscription:migrate-legacy');
-        $this->setDescription('Migrate legacy ebizcharge_recurring_dates / ebizcharge_recurring_order rows into Magento_Vault-backed subscriptions. Defaults to --dry-run.');
+        $this->setDescription(
+            'Migrate legacy recurring rows into Magento Vault-backed subscriptions; defaults to dry-run.'
+        );
         $this->addOption('execute', null, InputOption::VALUE_NONE, 'Persist changes. Without this, runs read-only.');
         parent::configure();
     }
@@ -41,7 +38,8 @@ class MigrateLegacySubscriptions extends Command
 
         $output->writeln('');
         $output->writeln(sprintf('Processed legacy rows: <comment>%d</comment>', $stats['processed']));
-        $output->writeln(sprintf('Subscriptions that %s: <info>%d</info>',
+        $output->writeln(sprintf(
+            'Subscriptions that %s: <info>%d</info>',
             $execute ? 'were created' : 'WOULD be created',
             $stats['migrated']
         ));
@@ -66,7 +64,9 @@ class MigrateLegacySubscriptions extends Command
         if (!$execute) {
             $output->writeln('');
             $output->writeln('<comment>Re-run with --execute to apply.</comment>');
-            $output->writeln('<comment>Tip: run `bin/magento gtstudio:ebizcharge:vault:migrate --execute` first so customers have tokens to bind subscriptions to.</comment>');
+            $output->writeln(
+                '<comment>Run the Vault migration first so customers have subscription tokens.</comment>'
+            );
         }
 
         return self::SUCCESS;

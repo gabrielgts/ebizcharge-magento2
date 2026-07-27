@@ -16,12 +16,7 @@ use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\Registry;
 use Magento\Sales\Api\OrderRepositoryInterface;
 
-/**
- * Renders the admin subscription detail page: summary, action buttons, items table, charge history.
- *
- * Designed for the page to load quickly even when a subscription has hundreds of charges — the
- * charge collection is paged at 50 newest-first.
- */
+/** Provides Admin subscription details and charge history. */
 class Detail extends Template
 {
     public function __construct(

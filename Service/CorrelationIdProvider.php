@@ -2,12 +2,10 @@
 
 namespace Gtstudio\Ebizcharge\Service;
 
+use InvalidArgumentException;
 use Magento\Framework\Math\Random;
 
-/**
- * Provides a per-request correlation ID stamped onto every gateway operation, log line, and order
- * additional_information so a single ID joins browser -> server -> gateway -> reconciler.
- */
+/** Provides request and recurring-operation correlation IDs. */
 class CorrelationIdProvider
 {
     private ?string $correlationId = null;
@@ -34,7 +32,7 @@ class CorrelationIdProvider
     {
         $correlationId = trim($correlationId);
         if ($correlationId === '') {
-            throw new \InvalidArgumentException('Correlation ID cannot be empty.');
+            throw new InvalidArgumentException('Correlation ID cannot be empty.');
         }
         $this->correlationId = $correlationId;
     }

@@ -5,10 +5,7 @@ namespace Gtstudio\Ebizcharge\Gateway\Http;
 use Magento\Payment\Gateway\Http\ClientException;
 use SoapFault;
 
-/**
- * Preserves machine-readable SOAP fault context for internal recovery decisions while exposing
- * only Magento's generic gateway message to checkout.
- */
+/** Preserves internal SOAP fault context. */
 class SoapFaultException extends ClientException
 {
     public function __construct(
