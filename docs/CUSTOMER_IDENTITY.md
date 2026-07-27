@@ -70,6 +70,10 @@ from each legacy `ebizcharge_token.ebzc_cust_id` while migrating payment profile
 identity lookup/create logic is shared by checkout, Vault profile provisioning, Admin, and CLI;
 there is no separate duplicate customer migration implementation.
 
+No Magento setup data patch is registered for legacy Vault migration. Remote payment-profile
+discovery is available only through the explicit `gtstudio:ebizcharge:vault:migrate` command so
+deployment does not depend on EBizCharge availability or dataset size.
+
 ## Administration and CLI
 
 The Magento customer edit page contains an **EBizCharge Customer Identity** panel. Staff can edit

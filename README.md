@@ -1,10 +1,10 @@
 # Gtstudio EBizCharge for Magento 2
 
-[![Module version](https://img.shields.io/badge/module-1.0.0-1f6feb)](composer.json)
+[![Module version](https://img.shields.io/badge/module-1.0.1-1f6feb)](composer.json)
 [![Magento](https://img.shields.io/badge/Magento-2.x-EE672F?logo=magento&logoColor=white)](https://business.adobe.com/products/magento/magento-commerce.html)
 [![PHP](https://img.shields.io/badge/PHP-8.3%20%7C%208.4-777BB4?logo=php&logoColor=white)](composer.json)
 [![Unit tests](https://img.shields.io/badge/unit_tests-126_passing-2ea44f)](#testing-and-code-coverage)
-[![Line coverage](https://img.shields.io/badge/line_coverage-20.49%25-d29922)](#testing-and-code-coverage)
+[![Line coverage](https://img.shields.io/badge/line_coverage-20.55%25-d29922)](#testing-and-code-coverage)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 
 `Gtstudio_Ebizcharge` is a server-side EBizCharge Connect payment integration for Magento 2 and
@@ -42,7 +42,7 @@ Composer package: `gtstudio/module-ebizcharge`
 
 Magento module: `Gtstudio_Ebizcharge`
 
-Current module version: `1.0.0`
+Current module version: `1.0.1`
 
 ## Installation
 
@@ -141,6 +141,11 @@ Customer lookup, creation, and customer-number resolution are centralized in one
 service. The migration, checkout, Vault, Admin, and CLI paths reuse that service rather than
 maintaining separate implementations.
 
+There is no Magento setup data patch for legacy Vault migration. `setup:upgrade` never contacts
+EBizCharge or scans remote payment profiles. Migration is intentionally operator-initiated through
+the command above. On large datasets, run the read-only command during a maintenance window before
+using `--execute`.
+
 ## Security
 
 - Gateway credentials use Magento's encrypted configuration backend.
@@ -159,15 +164,15 @@ administrative, logging, and checkout environment.
 
 ## Testing and code coverage
 
-Baseline measured on 2026-07-24 with PHP 8.4.6, PHPUnit 10.5.63, and Xdebug 3.4.2:
+Baseline measured on 2026-07-26 with PHP 8.4.6, PHPUnit 10.5.63, and Xdebug 3.4.2:
 
 | Metric | Result |
 |---|---:|
 | Passing unit tests | 126 |
 | Assertions | 282 |
-| Line coverage | 20.49% (675 / 3,294) |
-| Method coverage | 11.38% (51 / 448) |
-| Class coverage | 8.55% (10 / 117) |
+| Line coverage | 20.55% (675 / 3,284) |
+| Method coverage | 11.49% (51 / 444) |
+| Class coverage | 8.62% (10 / 116) |
 
 The coverage baseline excludes `AchDataBuilderTest`. Its four tests currently stop during mock
 configuration because `unsAdditionalInformation` is not declared on the PHPUnit mock. The full
